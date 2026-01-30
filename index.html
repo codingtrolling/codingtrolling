@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>codingtrolling // Utility Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        .card { background: #161e2d; border: 1px solid #1e293b; transition: all 0.3s ease; }
+        .card:hover { border-color: #3b82f6; transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.3); }
+        .btn-blue { background: #2563eb; transition: background 0.2s; }
+        .btn-blue:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col">
+
+    <nav class="p-6 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter uppercase">
+                coding<span class="text-blue-500">trolling</span>
+            </h1>
+            <div class="space-x-6 text-sm font-medium text-slate-400">
+                <a href="#" class="hover:text-white transition">Home</a>
+                <a href="https://github.com/codingtrolling" class="hover:text-white transition">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="py-16 px-6 text-center">
+        <h2 class="text-4xl md:text-5xl font-bold mb-4">The Utility Hub</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">High-performance web tools that run on your hardware, not your data plan.</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+        
+        <div class="card p-8 rounded-2xl flex flex-col">
+            <div class="mb-4 text-blue-500 text-3xl font-bold">01.</div>
+            <h3 class="text-2xl font-bold mb-3">Subway Runner</h3>
+            <p class="text-slate-400 text-sm mb-8 flex-grow">
+                Run, crash, die, reach, score. Tired of downloading? Just grab a snack and play this game instantly instead of waiting for a store install.
+            </p>
+            <a href="/subway-runner" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Play Now</a>
+        </div>
+
+        <div class="card p-8 rounded-2xl flex flex-col">
+            <div class="mb-4 text-blue-500 text-3xl font-bold">02.</div>
+            <h3 class="text-2xl font-bold mb-3">Music Player</h3>
+            <p class="text-slate-400 text-sm mb-8 flex-grow">
+                Older device? Laggier UI? Use our player. Drag a file into the box and play. It uses local resources, not your RAM or external servers.
+            </p>
+            <a href="/music-player" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Open Player</a>
+        </div>
+
+        <div class="card p-8 rounded-2xl flex flex-col">
+            <div class="mb-4 text-blue-500 text-3xl font-bold">03.</div>
+            <h3 class="text-2xl font-bold mb-3">PDF Reader</h3>
+            <p class="text-slate-400 text-sm mb-8 flex-grow">
+                No internet? Don't wait for large files to load. Drag a PDF here to read using your hardware's power. Private, fast, and offline-ready.
+            </p>
+            <a href="/pdf-reader" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Use Reader</a>
+        </div>
+
+    </main>
+
+    <footer class="mt-auto border-t border-slate-800 p-10 bg-slate-900/30">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <p class="text-slate-500 text-sm">&copy; 2025-2026 codingtrolling company</p>
+                <p class="text-slate-300 font-mono text-sm mt-1">contact.codingtrolling@gmail.com</p>
+            </div>
+            <div class="md:text-right">
+                <a href="https://github.com/codingtrolling" class="text-blue-500 hover:text-blue-400 font-bold transition">
+                    GitHub: @codingtrolling
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
