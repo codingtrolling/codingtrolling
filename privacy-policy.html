@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy // codingtrolling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: #94a3b8; line-height: 1.8; }
+        .policy-container { max-width: 800px; margin: 0 auto; padding: 100px 20px; }
+        h1, h2, h3 { color: #f8fafc; font-weight: 800; text-transform: uppercase; letter-spacing: -0.025em; }
+        .accent { color: #3b82f6; }
+        section { margin-bottom: 3rem; border-bottom: 1px solid #1e293b; padding-bottom: 2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="policy-container">
+        <header class="mb-12 border-b-4 border-blue-600 pb-6">
+            <h1 class="text-4xl italic mb-2">Privacy <span class="accent">&</span> Policy</h1>
+            <p class="text-xs font-black uppercase tracking-widest">Effective Date: January 31, 2026</p>
+        </header>
+
+        <section>
+            <h2 class="text-xl mb-4">1. Introduction</h2>
+            <p>Welcome to <strong>codingtrolling.com</strong>. We operate the Utility Hub, a suite of high-performance tools ranging from gaming (SusCraft) to system emulation (Windows 1 Emulator). This Privacy Policy explains how we collect, use, and protect your data across our entire ecosystem. By using our services, you agree to the protocols outlined herein.</p>
+        </section>
+
+        <section>
+            <h2 class="text-xl mb-4">2. Data Collection Protocols</h2>
+            <h3 class="text-sm mb-2 accent">A. Personal Information</h3>
+            <p>When you utilize our "Login" feature, we access basic Google Profile data via OAuth 2.0. This includes your unique User ID, Name, and Profile Picture. This data is used to generate your character skin in SusCraft and personalize your dashboard settings.</p>
+            
+            <h3 class="text-sm mt-4 mb-2 accent">B. Browser-Based Storage</h3>
+            <p>We utilize <strong>LocalStorage</strong> and <strong>SessionStorage</strong> to maintain persistent app states. This includes your high scores in Subway Runner, your custom Windows 1 BIOS settings, and your Bozin AI chat history. This data stays on your machine and is not stored on our primary servers.</p>
+        </section>
+
+        <section>
+            <h2 class="text-xl mb-4">3. Tool-Specific Disclosures</h2>
+            <ul class="list-disc pl-5 space-y-4">
+                <li><strong>SusCraft:</strong> Player movements and block interactions are processed in real-time. Your Google Profile picture is used as a texture mapping for your 3D avatar.</li>
+                <li><strong>Bozin AI:</strong> Queries sent to the AI are processed via encrypted API calls to Google Cloud. We do not use your private chats for model training.</li>
+                <li><strong>Windows 1 Emulator:</strong> The x86 virtualization happens entirely in the client-side sandbox. Any "files" created within the emulator are temporary and destroyed upon page refresh unless exported.</li>
+                <li><strong>Panny Painting:</strong> Canvas data is rendered as a Base64 string for local saving only.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="text-xl mb-4">4. Third-Party Integration</h2>
+            <p>We leverage Google Cloud Infrastructure for tool connectivity. Consequently, Google's standard privacy protocols also apply to the traffic passing through these nodes. We do not sell your data to third-party advertisers. Our revenue is derived from utility, not user-tracking.</p>
+        </section>
+
+        <section>
+            <h2 class="text-xl mb-4">5. User Rights & Data Deletion</h2>
+            <p>Users maintain the "Right to be Forgotten." Within your <strong>Account Settings</strong>, you may select the "Delete Local Data" option. This will immediately purge all LocalStorage keys, revoke your login token, and reset your Hub presence to zero. Since we do not maintain a permanent database of your identity, this action is irreversible.</p>
+        </section>
+
+        <section>
+            <h2 class="text-xl mb-4">6. Security Architecture</h2>
+            <p>codingtrolling employs SSL/TLS encryption for all data in transit. Our architecture is designed to minimize server-side footprint, ensuring that your private document viewing (via PDF Reader) and local music playback remain strictly confidential.</p>
+        </section>
+
+        <footer class="mt-12 text-center">
+            <a href="/" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl font-bold transition">Accept & Return to Hub</a>
+            <p class="mt-8 text-xs text-slate-600 italic uppercase">Copyright 2026 codingtrolling company</p>
+        </footer>
+    </div>
+
+</body>
+</html>
