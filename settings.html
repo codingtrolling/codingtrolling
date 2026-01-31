@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings // codingtrolling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        .settings-card { 
+            background: #161e2d; 
+            border: 1px solid #1e293b; 
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+        }
+        input {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            color: white;
+            margin-bottom: 1.5rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: #3b82f6; }
+        .btn-save {
+            background: #2563eb;
+            color: white;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .btn-save:hover { background: #1d4ed8; transform: translateY(-2px); }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="settings-card shadow-2xl">
+        <div class="mb-8">
+            <h1 class="text-3xl font-black tracking-tighter uppercase italic">
+                Profile <span class="text-blue-500">Settings</span>
+            </h1>
+            <p class="text-slate-500 text-sm font-bold uppercase tracking-widest mt-1">Configure your identity</p>
+        </div>
+
+        <label class="block text-blue-500 text-xs font-black mb-2 uppercase tracking-widest">Display Name</label>
+        <input type="text" id="username-input" placeholder="e.g. PlayerOne">
+
+        <label class="block text-blue-500 text-xs font-black mb-2 uppercase tracking-widest">Character Skin URL (.png)</label>
+        <input type="text" id="skin-input" placeholder="https://link-to-your-skin.png">
+
+        <div class="flex flex-col gap-3">
+            <button onclick="saveSettings()" class="btn-save shadow-lg shadow-blue-900/20">Save Changes</button>
+            <a href="/" class="text-center text-slate-500 text-sm font-bold hover:text-white transition py-2">Back to Hub</a>
+        </div>
+    </div>
+
+    <script>
+        // Load current data from LocalStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('username-input').value = localStorage.getItem('suscraft_username') || '';
+            document.getElementById('skin-input').value = localStorage.getItem('suscraft_skin') || '';
+        });
+
+        function saveSettings() {
+            const user = document.getElementById('username-input').value;
+            const skin = document.getElementById('skin-input').value;
+
+            localStorage.setItem('suscraft_username', user);
+            localStorage.setItem('suscraft_skin', skin);
+
+            // Optional: Visual feedback
+            const btn = document.querySelector('.btn-save');
+            btn.innerText = "Saved!";
+            btn.style.background = "#059669"; // Green
+            
+            setTimeout(() => {
+                window.location.href = '/'; // Send back to hub after saving
+            }, 800);
+        }
+    </script>
+</body>
+</html>
