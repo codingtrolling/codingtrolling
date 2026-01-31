@@ -32,31 +32,19 @@
             transition: background 0.2s;
         }
         .btn-action:hover { background: #1d4ed8; }
-        .profile-img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; cursor: pointer; }
-
-        /* Settings Modal (Overlay) */
-        #settings-modal {
-            display: none; position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-            align-items: center; justify-content: center;
+        /* Profile Image now acts as a link */
+        .profile-img { 
+            width: 42px; height: 42px; 
+            border-radius: 50%; 
+            border: 2px solid #3b82f6; 
+            object-fit: cover; 
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+        .profile-img:hover { transform: scale(1.1); }
     </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col">
-
-    <div id="settings-modal" onclick="if(event.target === this) closeSettings()">
-        <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl w-full max-w-md shadow-2xl">
-            <h2 class="text-2xl font-bold mb-6 flex justify-between">Settings <button onclick="closeSettings()" class="text-slate-500">&times;</button></h2>
-            
-            <label class="text-xs font-bold text-blue-500 uppercase mb-2 block">Username</label>
-            <input type="text" id="username-input" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-4 outline-none focus:border-blue-500" placeholder="Username">
-            
-            <label class="text-xs font-bold text-blue-500 uppercase mb-2 block">Custom Skin URL</label>
-            <input type="text" id="skin-input" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-6 outline-none focus:border-blue-500" placeholder="https://...">
-            
-            <button onclick="saveProfile()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold transition">Save & Apply</button>
-        </div>
-    </div>
 
     <nav class="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -129,27 +117,25 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem('google_token');
-            // Populate settings inputs if data exists
-            document.getElementById('username-input').value = localStorage.getItem('suscraft_username') || '';
-            document.getElementById('skin-input').value = localStorage.getItem('suscraft_skin') || '';
-
-            // Handle URL Hash for settings
-            if(window.location.hash === '#settings') toggleModal(true);
-            window.addEventListener('hashchange', () => toggleModal(window.location.hash === '#settings'));
-
             if (!token) return;
 
             try {
                 const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-                if(!localStorage.getItem('suscraft_skin')) localStorage.setItem('suscraft_skin', payload.picture);
+                
+                // Save profile pic if not already set manually
+                if(!localStorage.getItem('suscraft_skin')) {
+                    localStorage.setItem('suscraft_skin', payload.picture);
+                }
 
                 document.getElementById('auth-zone').innerHTML = `
                     <div class="flex items-center gap-4">
                         <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-red-500 font-black uppercase">Logout</button>
                         <div class="relative group">
-                            <img src="${payload.picture}" onclick="openSettings()" class="profile-img" alt="User">
+                            <a href="/settings">
+                                <img src="${payload.picture}" class="profile-img" alt="User">
+                            </a>
                             <div class="absolute top-12 right-0 bg-slate-800 p-2 rounded text-[10px] opacity-0 group-hover:opacity-100 transition shadow-xl whitespace-nowrap z-50">
-                                Click image for settings
+                                User: ${payload.name}
                             </div>
                         </div>
                     </div>
@@ -158,16 +144,6 @@
                 localStorage.removeItem('google_token');
             }
         });
-
-        function openSettings() { window.location.hash = 'settings'; }
-        function closeSettings() { window.location.hash = ''; }
-        function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
-
-        function saveProfile() {
-            localStorage.setItem('suscraft_username', document.getElementById('username-input').value);
-            localStorage.setItem('suscraft_skin', document.getElementById('skin-input').value);
-            closeSettings();
-        }
 
         function logout() {
             localStorage.clear();
