@@ -3,87 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings // codingtrolling</title>
+    <title>Account Management // codingtrolling</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { background-color: #0b0f1a; color: #e2e8f0; }
-        .settings-card { 
-            background: #161e2d; 
-            border: 1px solid #1e293b; 
-            padding: 2.5rem;
-            border-radius: 1.5rem;
-            width: 100%;
-            max-width: 500px;
-        }
-        input {
-            width: 100%;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            color: white;
-            margin-bottom: 1.5rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        input:focus { border-color: #3b82f6; }
-        .btn-save {
-            background: #2563eb;
-            color: white;
-            width: 100%;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            font-weight: 700;
-            transition: all 0.2s;
-        }
-        .btn-save:hover { background: #1d4ed8; transform: translateY(-2px); }
+        body { background-color: #0b0f1a; color: #e2e8f0; font-family: sans-serif; }
+        .panel { background: #161e2d; border: 1px solid #1e293b; border-radius: 1.5rem; }
+        .input-box { background: #0d1117; border: 1px solid #30363d; color: white; transition: 0.2s; }
+        .input-box:focus { border-color: #3b82f6; outline: none; }
+        .btn-blue { background: #2563eb; transition: 0.2s; }
+        .btn-blue:hover { background: #1d4ed8; }
+        .account-item { background: #1c2533; border: 1px solid #2d3748; transition: 0.2s; }
+        .account-item:hover { border-color: #3b82f6; }
+        .active-ring { border: 2px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
     </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col items-center justify-center p-6">
+<body class="min-h-screen p-6 flex flex-col items-center">
 
-    <div class="settings-card shadow-2xl">
-        <div class="mb-8">
-            <h1 class="text-3xl font-black tracking-tighter uppercase italic">
-                Profile <span class="text-blue-500">Settings</span>
-            </h1>
-            <p class="text-slate-500 text-sm font-bold uppercase tracking-widest mt-1">Configure your identity</p>
+    <div class="w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-8">
+            <a href="/" class="text-slate-500 hover:text-white transition flex items-center gap-2 font-bold text-sm">
+                <i class="bi bi-arrow-left"></i> BACK TO HUB
+            </a>
+            <h1 class="text-xl font-black tracking-tighter uppercase italic">Account <span class="text-blue-500">Manager</span></h1>
         </div>
 
-        <label class="block text-blue-500 text-xs font-black mb-2 uppercase tracking-widest">Display Name</label>
-        <input type="text" id="username-input" placeholder="e.g. PlayerOne">
+        <div class="panel p-8 mb-8">
+            <h2 class="text-sm font-black text-blue-500 uppercase tracking-widest mb-6">Active Profile Settings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Display Name</label>
+                    <input type="text" id="username-input" class="input-box w-full p-3 rounded-lg text-sm" placeholder="Username">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Skin Image URL</label>
+                    <input type="text" id="skin-input" class="input-box w-full p-3 rounded-lg text-sm" placeholder="https://...">
+                </div>
+            </div>
+            <button onclick="saveActiveProfile()" class="btn-blue w-full mt-6 py-3 rounded-xl font-bold text-sm shadow-lg">SAVE CHANGES</button>
+        </div>
 
-        <label class="block text-blue-500 text-xs font-black mb-2 uppercase tracking-widest">Character Skin URL (.png)</label>
-        <input type="text" id="skin-input" placeholder="https://link-to-your-skin.png">
+        <div class="panel p-8">
+            <h2 class="text-sm font-black text-blue-500 uppercase tracking-widest mb-6">Switch or Add Accounts</h2>
+            
+            <div id="account-list" class="space-y-3 mb-8">
+                </div>
 
-        <div class="flex flex-col gap-3">
-            <button onclick="saveSettings()" class="btn-save shadow-lg shadow-blue-900/20">Save Changes</button>
-            <a href="/" class="text-center text-slate-500 text-sm font-bold hover:text-white transition py-2">Back to Hub</a>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="location.href='/login'" class="border border-slate-700 hover:bg-slate-800 text-white py-3 rounded-xl font-bold text-xs transition uppercase">
+                    <i class="bi bi-plus-lg mr-2"></i> Add Another Account
+                </button>
+                <button onclick="deleteEverything()" class="bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-900/50 py-3 rounded-xl font-bold text-xs transition uppercase">
+                    <i class="bi bi-trash3 mr-2"></i> Delete Local Data
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Load current data from LocalStorage
-        document.addEventListener('DOMContentLoaded', () => {
+        function loadManager() {
+            // Load current active info
             document.getElementById('username-input').value = localStorage.getItem('suscraft_username') || '';
             document.getElementById('skin-input').value = localStorage.getItem('suscraft_skin') || '';
-        });
 
-        function saveSettings() {
-            const user = document.getElementById('username-input').value;
-            const skin = document.getElementById('skin-input').value;
+            const list = document.getElementById('account-list');
+            list.innerHTML = '';
 
-            localStorage.setItem('suscraft_username', user);
-            localStorage.setItem('suscraft_skin', skin);
-
-            // Optional: Visual feedback
-            const btn = document.querySelector('.btn-save');
-            btn.innerText = "Saved!";
-            btn.style.background = "#059669"; // Green
-            
-            setTimeout(() => {
-                window.location.href = '/'; // Send back to hub after saving
-            }, 800);
+            // This simulates a "Saved Accounts" list from localStorage
+            // In a real Google setup, you usually only have one token at a time, 
+            // so we show the current logged-in user.
+            const token = localStorage.getItem('google_token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    
+                    list.innerHTML = `
+                        <div class="account-item p-4 rounded-2xl flex items-center justify-between active-ring">
+                            <div class="flex items-center gap-4">
+                                <img src="${payload.picture}" class="w-12 h-12 rounded-full border-2 border-blue-500">
+                                <div>
+                                    <p class="font-bold text-sm">${payload.name}</p>
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Active Google Account</p>
+                                </div>
+                            </div>
+                            <span class="text-blue-500 text-xs font-black uppercase italic">Current</span>
+                        </div>
+                    `;
+                } catch (e) {
+                    list.innerHTML = `<p class="text-slate-500 text-sm">Session error. Please log in again.</p>`;
+                }
+            } else {
+                list.innerHTML = `<p class="text-slate-500 text-sm">No accounts connected.</p>`;
+            }
         }
+
+        function saveActiveProfile() {
+            localStorage.setItem('suscraft_username', document.getElementById('username-input').value);
+            localStorage.setItem('suscraft_skin', document.getElementById('skin-input').value);
+            alert("Profile updated!");
+        }
+
+        function deleteEverything() {
+            if (confirm("Are you sure? This will delete your skin, username, and log you out.")) {
+                localStorage.clear();
+                window.location.href = '/';
+            }
+        }
+
+        window.onload = loadManager;
     </script>
 </body>
 </html>
