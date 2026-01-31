@@ -11,6 +11,7 @@
         .card:hover { border-color: #3b82f6; transform: translateY(-5px); box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.3); }
         .btn-blue { background: #2563eb; transition: background 0.2s; margin-top: auto; }
         .btn-blue:hover { background: #1d4ed8; }
+        .profile-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; }
     </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col">
@@ -25,49 +26,105 @@
                     <a href="#" class="hover:text-white transition">Home</a>
                     <a href="https://github.com/codingtrolling" class="hover:text-white transition">GitHub</a>
                 </div>
-                <a href="/login" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-bold text-sm transition">Login</a>
+                
+                <div id="auth-zone">
+                    <a href="/login" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-bold text-sm transition">Login</a>
+                </div>
             </div>
         </div>
     </nav>
 
     <header class="py-16 px-6 text-center">
         <h2 class="text-4xl md:text-5xl font-bold mb-4">The Utility Hub</h2>
-        <p class="text-slate-400 max-w-xl mx-auto text-sm">High-performance web tools that run on your hardware, not your data plan.</p>
+        <p class="text-slate-400 max-w-xl mx-auto text-sm">High-performance web tools powered by your hardware.</p>
     </header>
 
     <main class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
         <div class="card p-8 rounded-2xl">
             <div class="mb-4 text-blue-500 text-3xl font-bold">01.</div>
             <h3 class="text-2xl font-bold mb-3">Subway Runner</h3>
-            <p class="text-slate-400 text-sm mb-8">Run, crash, die, reach, score. Tired of downloading? Just grab a snack and play this game instantly instead of waiting for a store install.</p>
+            <p class="text-slate-400 text-sm mb-8">Play instantly in your browser. No downloads, just pure high-score chasing.</p>
             <a href="/subway-runner" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Play Now</a>
         </div>
         <div class="card p-8 rounded-2xl">
             <div class="mb-4 text-blue-500 text-3xl font-bold">02.</div>
             <h3 class="text-2xl font-bold mb-3">Music Player</h3>
-            <p class="text-slate-400 text-sm mb-8">Older device? Laggier UI? Use our player. Drag a file into the box and play. It uses local resources, not your RAM or external servers.</p>
+            <p class="text-slate-400 text-sm mb-8">Lightweight local player. Drag your files in and listen without server lag.</p>
             <a href="/music-player" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Open Player</a>
         </div>
         <div class="card p-8 rounded-2xl">
             <div class="mb-4 text-blue-500 text-3xl font-bold">03.</div>
             <h3 class="text-2xl font-bold mb-3">PDF Reader</h3>
-            <p class="text-slate-400 text-sm mb-8">No internet? Don't wait for large files to load. Drag a PDF here to read using your hardware's power. Private, fast, and offline-ready.</p>
+            <p class="text-slate-400 text-sm mb-8">Private, fast, and works offline. Use your own hardware to view documents.</p>
             <a href="/pdf-reader" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Use Reader</a>
         </div>
         <div class="card p-8 rounded-2xl">
             <div class="mb-4 text-blue-500 text-3xl font-bold">04.</div>
             <h3 class="text-2xl font-bold mb-3">Bozin AI</h3>
-            <p class="text-slate-400 text-sm mb-8">Your Awesome AI that is helping you at any time. Math, code, or just chatting. Bozin is live anywhere, in any country.</p>
+            <p class="text-slate-400 text-sm mb-8">Your always-available AI assistant for math, code, and chat.</p>
             <a href="/bozin-ai" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Use AI</a>
         </div>
         <div class="card p-8 rounded-2xl">
             <div class="mb-4 text-blue-500 text-3xl font-bold">05.</div>
             <h3 class="text-2xl font-bold mb-3">Android Launcher</h3>
-            <p class="text-slate-400 text-sm mb-8">A simulator launcher that works in a single HTML code. Features simulator apps and dummy settings—perfect for relaxing or boring times.</p>
+            <p class="text-slate-400 text-sm mb-8">A smooth simulator that mimics an Android OS right in your browser.</p>
             <a href="/android-launcher" class="btn-blue text-white text-center py-3 rounded-lg font-bold">Use Launcher</a>
         </div>
     </main>
 
+    <footer class="mt-auto border-t border-slate-800 p-10 bg-slate-900/30 text-center md:text-left">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+            <div>
+                <p class="text-slate-500">&copy; 2026 codingtrolling company</p>
+                <p class="text-slate-300 font-mono mt-1">contact.codingtrolling@gmail.com</p>
+            </div>
+            <a href="https://github.com/codingtrolling" class="text-blue-500 hover:text-blue-400 font-bold transition">GitHub: @codingtrolling</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem('google_token');
+            const authZone = document.getElementById('auth-zone');
+
+            if (token) {
+                try {
+                    // Decode Google JWT
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+
+                    const user = JSON.parse(jsonPayload);
+
+                    // Switch UI to Profile Pic
+                    authZone.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <button onclick="logout()" class="text-xs text-slate-500 hover:text-red-400 transition font-bold uppercase tracking-wider">Logout</button>
+                            <div class="relative group">
+                                <img src="${user.picture}" class="profile-img shadow-lg" alt="User">
+                                <span class="absolute -bottom-8 right-0 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    ${user.name}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) {
+                    console.error("Auth error:", e);
+                    localStorage.removeItem('google_token'); // Clear bad token
+                }
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('google_token');
+            window.location.reload();
+        }
+    </script>
+
+</body>
+</html>
     <footer class="mt-auto border-t border-slate-800 p-10 bg-slate-900/30">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
             <div>
