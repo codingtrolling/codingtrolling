@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro PDF Reader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        :root { --toolbar-bg: #333; --viewer-bg: #525659; --accent: #007bff; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
+        
+        /* Toolbar Styling */
+        .pdf-toolbar {
+            height: 50px; background: var(--toolbar-bg); color: white;
+            display: flex; align-items: center; padding: 0 20px;
+            gap: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10; position: relative;
+        }
+        
+        /* Main Layout */
+        .main-container { display: flex; height: calc(100% - 50px); background: var(--viewer-bg); }
+        
+        #pdf-render-container {
+            flex: 1; overflow: auto; display: flex; justify-content: center; padding: 20px;
+        }
+
+        canvas { box-shadow: 0 0 10px rgba(0,0,0,0.5); margin-bottom: 20px; background: white; }
+
+        /* Tools */
+        .tool-group { display: flex; align-items: center; gap: 8px; border-right: 1px solid #555; padding-right: 15px; }
+        button { background: #444; border: 1px solid #666; color: white; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+        button:hover { background: var(--accent); }
+        input[type="number"] { width: 40px; background: #222; color: white; border: 1px solid #555; text-align: center; }
+        .upload-btn { background: var(--accent); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="pdf-toolbar">
+        <div class="tool-group">
+            <input type="file" id="file-upload" accept=".pdf" style="display:none">
+            <button class="upload-btn" onclick="document.getElementById('file-upload').click()">Open File</button>
+        </div>
+
+        <div class="tool-group">
+            <button id="prev-page">Prev</button>
+            <span>Page: <input type="number" id="page-num" value="1"> / <span id="page-count">0</span></span>
+            <button id="next-page">Next</button>
+        </div>
+
+        <div class="tool-group">
+            <button id="zoom-out">−</button>
+            <span id="zoom-percent">100%</span>
+            <button id="zoom-in">+</button>
+        </div>
+
+        <div class="tool-group">
+            <button onclick="window.print()">Print</button>
+            <button id="download">Download</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div id="pdf-render-container">
+            <canvas id="pdf-canvas"></canvas>
+        </div>
+    </div>
+
+<script>
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    let pdfDoc = null,
+        pageNum = 1,
+        pageIsRendering = false,
+        pageNumIsPending = null,
+        scale = 1.5,
+        canvas = document.getElementById('pdf-canvas'),
+        ctx = canvas.getContext('2d');
+
+    // Render the page
+    const renderPage = num => {
+        pageIsRendering = true;
+
+        pdfDoc.getPage(num).then(page => {
+            const viewport = page.getViewport({ scale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderCtx = {
+                canvasContext: ctx,
+                viewport
+            };
+
+            page.render(renderCtx).promise.then(() => {
+                pageIsRendering = false;
+                if (pageNumIsPending !== null) {
+                    renderPage(pageNumIsPending);
+                    pageNumIsPending = null;
+                }
+            });
+
+            document.getElementById('page-num').value = num;
+        });
+    };
+
+    const queueRenderPage = num => {
+        if (pageIsRendering) {
+            pageNumIsPending = num;
+        } else {
+            renderPage(num);
+        }
+    };
+
+    // File Upload Logic
+    document.getElementById('file-upload').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file.type !== 'application/pdf') {
+            alert("Please select a PDF file.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function() {
+            const typedarray = new Uint8Array(this.result);
+
+            pdfjsLib.getDocument(typedarray).promise.then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
+                document.getElementById('page-count').textContent = pdfDoc.numPages;
+                renderPage(pageNum);
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    // Button Events
+    document.getElementById('prev-page').addEventListener('click', () => {
+        if (pageNum <= 1) return;
+        pageNum--;
+        queueRenderPage(pageNum);
+    });
+
+    document.getElementById('next-page').addEventListener('click', () => {
+        if (pageNum >= pdfDoc.numPages) return;
+        pageNum++;
+        queueRenderPage(pageNum);
+    });
+
+    document.getElementById('zoom-in').addEventListener('click', () => {
+        scale += 0.2;
+        document.getElementById('zoom-percent').textContent = `${Math.round(scale * 100)}%`;
+        renderPage(pageNum);
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', () => {
+        if (scale <= 0.5) return;
+        scale -= 0.2;
+        document.getElementById('zoom-percent').textContent = `${Math.round(scale * 100)}%`;
+        renderPage(pageNum);
+    });
+</script>
+</body>
+  </html>
+  
