@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Player with File Upload</title>
+    <style>
+        :root { --primary: #00d1b2; --bg: #121212; }
+        body { background: #222; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
+        
+        /* Upload Section */
+        .upload-section { margin-bottom: 20px; border: 2px dashed #444; padding: 20px; border-radius: 10px; text-align: center; }
+        input[type="file"] { color: #888; }
+
+        .player-container { width: 90%; max-width: 800px; background: #000; position: relative; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; }
+        video { width: 100%; height: auto; display: block; }
+        
+        .controls {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
+            display: flex; flex-wrap: wrap; padding: 15px; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .player-container:hover .controls { opacity: 1; }
+        
+        .btn { background: none; border: none; color: white; cursor: pointer; padding: 8px; font-weight: bold; }
+        .btn:hover { color: var(--primary); }
+        
+        .progress-bar { flex: 1 1 100%; height: 6px; background: rgba(255,255,255,0.2); cursor: pointer; margin-bottom: 12px; border-radius: 3px; }
+        .progress-filled { height: 100%; background: var(--primary); width: 0%; border-radius: 3px; }
+        
+        .volume-slider { width: 70px; margin: 0 10px; cursor: pointer; accent-color: var(--primary); }
+        .time-display { font-size: 13px; margin: 0 10px; min-width: 80px; }
+        select { background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="upload-section">
+        <h3>1. Load Your Media</h3>
+        <input type="file" id="file_selector" accept="video/*, audio/*">
+        <p style="font-size: 12px; color: #888;">Select any MP4, WebM, or MP3 file</p>
+    </div>
+
+    <div class="player-container">
+        <video id="main_video">
+            </video>
+        
+        <div class="controls">
+            <div class="progress-bar" id="progress_bg">
+                <div class="progress-filled" id="progress_bar"></div>
+            </div>
+
+            <button class="btn" id="play_pause">Play</button>
+            
+            <div class="time-display">
+                <span id="current_time">0:00</span> / <span id="duration">0:00</span>
+            </div>
+
+            <span style="font-size: 12px; margin-left: 10px;">Vol:</span>
+            <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.1" value="1">
+            
+            <select id="playback_speed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1.0x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+            </select>
+
+            <button class="btn" id="fullscreen" style="margin-left: auto;">[ Fullscreen ]</button>
+        </div>
+    </div>
+
+<script>
+    const player = document.getElementById('main_video');
+    const fileSelector = document.getElementById('file_selector');
+    const playBtn = document.getElementById('play_pause');
+    const progressBar = document.getElementById('progress_bar');
+    const progressBg = document.getElementById('progress_bg');
+    const timeCurr = document.getElementById('current_time');
+    const timeDur = document.getElementById('duration');
+
+    // --- UPLOAD LOGIC ---
+    fileSelector.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const fileURL = URL.createObjectURL(file); // Create a temporary local link to your file
+            player.src = fileURL;
+            player.play();
+            playBtn.textContent = 'Pause';
+        }
+    });
+
+    // --- PLAYER LOGIC ---
+    playBtn.addEventListener('click', () => {
+        if (!player.src) return alert("Please upload a file first!");
+        if (player.paused) {
+            player.play();
+            playBtn.textContent = 'Pause';
+        } else {
+            player.pause();
+            playBtn.textContent = 'Play';
+        }
+    });
+
+    player.addEventListener('timeupdate', () => {
+        const percent = (player.currentTime / player.duration) * 100;
+        progressBar.style.width = `${percent}%`;
+        let mins = Math.floor(player.currentTime / 60);
+        let secs = Math.floor(player.currentTime % 60);
+        timeCurr.textContent = `${mins}:${secs < 10 ? '0'+secs : secs}`;
+    });
+
+    player.addEventListener('loadedmetadata', () => {
+        let mins = Math.floor(player.duration / 60);
+        let secs = Math.floor(player.duration % 60);
+        timeDur.textContent = `${mins}:${secs < 10 ? '0'+secs : secs}`;
+    });
+
+    progressBg.addEventListener('click', (e) => {
+        const scrubTime = (e.offsetX / progressBg.offsetWidth) * player.duration;
+        player.currentTime = scrubTime;
+    });
+
+    document.getElementById('volume').addEventListener('input', (e) => player.volume = e.target.value);
+    document.getElementById('playback_speed').addEventListener('change', (e) => player.playbackRate = e.target.value);
+    document.getElementById('fullscreen').addEventListener('click', () => player.requestFullscreen?.());
+
+</script>
+</body>
+</html>
