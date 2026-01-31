@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body { margin: 0; overflow: hidden; background: #000; touch-action: none; font-family: sans-serif; }
+        canvas { display: block; }
         #crosshair { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: white; font-size: 24px; pointer-events: none; z-index: 10; display: none;
@@ -18,14 +19,17 @@
         
         #main-menu {
             position: fixed; inset: 0; z-index: 200;
-            background: #1a1a1a;
+            background: #111;
+            /* Pointing to a local background image */
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('assets/menu_bg.jpg');
+            background-size: cover;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .menu-btn {
             width: 280px; padding: 15px; margin: 10px; background: #333; border: 4px solid #000;
             color: white; font-weight: bold; text-transform: uppercase; text-align: center; cursor: pointer;
         }
-        .menu-btn:active { background: #3b82f6; }
+        .menu-btn:active { background: #3b82f6; transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -35,25 +39,27 @@
     <div id="main-menu">
         <h1 class="text-6xl font-black text-blue-500 mb-10 tracking-tighter italic">SUSCRAFT</h1>
         <div class="menu-btn" onclick="startGame()">Play Game</div>
-        <div class="menu-btn opacity-50">Multiplayer (Soon)</div>
-        <a href="/" class="menu-btn">Quit Game</a>
+        <div class="menu-btn opacity-50 cursor-not-allowed">Multiplayer (Soon)</div>
+        <a href="../index.html" class="menu-btn">Quit Game</a>
     </div>
 
     <div id="game-ui" class="ui-overlay">
-        <div class="absolute top-5 left-5 pointer-auto flex gap-3">
-            <button onclick="toggleCamera()" class="bg-black/60 text-white p-4 rounded-xl text-xl"><i class="bi bi-camera-video"></i></button>
+        <div class="absolute top-5 left-5 pointer-auto">
+            <button onclick="toggleCamera()" class="bg-black/60 text-white p-4 rounded-xl text-xl border border-white/10"><i class="bi bi-camera-video"></i></button>
         </div>
 
         <div class="absolute bottom-10 left-10 pointer-auto grid grid-cols-3 gap-2">
-            <div></div><button class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-white" ontouchstart="keys.w=true" ontouchend="keys.w=false"><i class="bi bi-caret-up-fill"></i></button><div></div>
-            <button class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-white" ontouchstart="keys.a=true" ontouchend="keys.a=false"><i class="bi bi-caret-left-fill"></i></button>
-            <button class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-white" ontouchstart="keys.s=true" ontouchend="keys.s=false"><i class="bi bi-caret-down-fill"></i></button>
-            <button class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-white" ontouchstart="keys.d=true" ontouchend="keys.d=false"><i class="bi bi-caret-right-fill"></i></button>
+            <div></div>
+            <button class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white active:bg-blue-500" ontouchstart="keys.w=true" ontouchend="keys.w=false"><i class="bi bi-caret-up-fill"></i></button>
+            <div></div>
+            <button class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white active:bg-blue-500" ontouchstart="keys.a=true" ontouchend="keys.a=false"><i class="bi bi-caret-left-fill"></i></button>
+            <button class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white active:bg-blue-500" ontouchstart="keys.s=true" ontouchend="keys.s=false"><i class="bi bi-caret-down-fill"></i></button>
+            <button class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white active:bg-blue-500" ontouchstart="keys.d=true" ontouchend="keys.d=false"><i class="bi bi-caret-right-fill"></i></button>
         </div>
 
         <div class="absolute bottom-10 right-10 pointer-auto flex flex-col gap-4">
-            <button onclick="placeBlock()" class="w-20 h-20 bg-blue-600 rounded-full text-white text-3xl shadow-2xl">+</button>
-            <button onclick="mineBlock()" class="w-20 h-20 bg-red-600 rounded-full text-white text-3xl shadow-2xl"><i class="bi bi-hammer"></i></button>
+            <button onclick="placeBlock()" class="w-20 h-20 bg-blue-600 rounded-full text-white text-4xl shadow-2xl active:scale-90">+</button>
+            <button onclick="mineBlock()" class="w-20 h-20 bg-red-600 rounded-full text-white text-3xl shadow-2xl active:scale-90"><i class="bi bi-hammer"></i></button>
         </div>
     </div>
 
@@ -62,12 +68,134 @@
         let keys = { w: false, a: false, s: false, d: false };
         let isFirstPerson = false;
         let moveRotation = 0;
+        const textureLoader = new THREE.TextureLoader();
+
+        // LOCAL ASSETS - Make sure these exist in your /assets folder!
+        const ASSETS = {
+            grass: 'assets/grass.png',
+            stone: 'assets/stone.png',
+            skin: localStorage.getItem('suscraft_skin') || 'assets/default_skin.png'
+        };
 
         function startGame() {
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
             document.getElementById('crosshair').style.display = 'block';
             init();
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            const light = new THREE.HemisphereLight(0xffffff, 0x444444, 2);
+            scene.add(light);
+
+            // Local Texture Loading
+            const grassTex = textureLoader.load(ASSETS.grass);
+            grassTex.magFilter = THREE.NearestFilter; // Keeps it pixelated/Minecraft style
+            
+            const stoneTex = textureLoader.load(ASSETS.stone);
+            stoneTex.magFilter = THREE.NearestFilter;
+
+            // Generate Local World
+            const geo = new THREE.BoxGeometry(1, 1, 1);
+            const mat = new THREE.MeshStandardMaterial({ map: grassTex });
+            
+            for(let x = -12; x < 12; x++) {
+                for(let z = -12; z < 12; z++) {
+                    const cube = new THREE.Mesh(geo, mat);
+                    cube.position.set(x, 0, z);
+                    scene.add(cube);
+                }
+            }
+
+            // Player with Local Skin
+            player = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 1.8, 0.6),
+                new THREE.MeshStandardMaterial({ map: textureLoader.load(ASSETS.skin) })
+            );
+            player.position.set(0, 1.5, 0);
+            scene.add(player);
+
+            // Swipe to Look
+            let lastTouchX = 0;
+            window.addEventListener('touchstart', (e) => { lastTouchX = e.touches[0].clientX; });
+            window.addEventListener('touchmove', (e) => {
+                const touchX = e.touches[0].clientX;
+                const deltaX = touchX - lastTouchX;
+                moveRotation -= deltaX * 0.007; // Sensitivity
+                lastTouchX = touchX;
+            });
+
+            animate();
+        }
+
+        function toggleCamera() { 
+            isFirstPerson = !isFirstPerson; 
+            player.visible = !isFirstPerson; 
+        }
+
+        function placeBlock() {
+            const stoneTex = textureLoader.load(ASSETS.stone);
+            stoneTex.magFilter = THREE.NearestFilter;
+            const cube = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshStandardMaterial({ map: stoneTex }));
+            
+            const dir = new THREE.Vector3(0,0,-1).applyQuaternion(player.quaternion);
+            cube.position.copy(player.position).add(dir.multiplyScalar(2));
+            cube.position.x = Math.round(cube.position.x);
+            cube.position.y = Math.round(cube.position.y);
+            cube.position.z = Math.round(cube.position.z);
+            scene.add(cube);
+        }
+
+        function mineBlock() {
+            const ray = new THREE.Raycaster();
+            const dir = new THREE.Vector3(0,0,-1).applyQuaternion(player.quaternion);
+            ray.set(player.position, dir);
+            const hits = ray.intersectObjects(scene.children);
+            // Don't mine the floor or yourself
+            if(hits.length > 0 && hits[0].object !== player && hits[0].distance < 5) {
+                scene.remove(hits[0].object);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            player.rotation.y = moveRotation;
+            const speed = 0.12;
+            if(keys.w) player.translateZ(-speed);
+            if(keys.s) player.translateZ(speed);
+            if(keys.a) player.translateX(-speed);
+            if(keys.d) player.translateX(speed);
+
+            if(isFirstPerson) {
+                camera.position.copy(player.position).y += 0.6;
+                camera.rotation.y = player.rotation.y;
+            } else {
+                const offset = new THREE.Vector3(0, 3, 6).applyQuaternion(player.quaternion);
+                camera.position.copy(player.position).add(offset);
+                camera.lookAt(player.position);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
         }
 
         function init() {
