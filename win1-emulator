@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BIOS // Windows 1 Emulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #000; color: #00ff00; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+        .bios-screen { padding: 2rem; display: flex; flex-direction: column; height: 100vh; }
+        .win1-ui { display: none; background: #000084; color: white; height: 100vh; font-family: sans-serif; }
+        .cursor { display: inline-block; width: 10px; height: 18px; background: #00ff00; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .setting-row { display: flex; justify-content: space-between; max-width: 400px; padding: 5px; cursor: pointer; }
+        .setting-row:hover { background: #00ff00; color: #000; }
+    </style>
+</head>
+<body>
+
+    <div id="bios" class="bios-screen">
+        <div class="border-b border-green-500 pb-2 mb-4">
+            <h1 class="text-xl">CT-BIOS (C) 2026 codingtrolling corp.</h1>
+            <p>CPU: Virtualized 8086 @ <span id="cpu-speed">4.77</span> MHz</p>
+        </div>
+
+        <div id="setup-menu" class="flex-grow">
+            <p class="mb-4 text-white font-bold">[ BIOS SETUP UTILITY ]</p>
+            <div class="setting-row" onclick="toggleSetting('cpu')">
+                <span>CPU Speed:</span> <span id="val-cpu">Standard</span>
+            </div>
+            <div class="setting-row" onclick="toggleSetting('ram')">
+                <span>Base Memory:</span> <span id="val-ram">640 KB</span>
+            </div>
+            <div class="setting-row" onclick="toggleSetting('boot')">
+                <span>Boot Sequence:</span> <span>Floppy, A:</span>
+            </div>
+            
+            <div class="mt-12">
+                <button onclick="startWindows()" class="bg-white text-black px-4 py-1 font-bold">F10: SAVE AND BOOT WINDOWS 1</button>
+            </div>
+        </div>
+
+        <div class="mt-auto text-xs">
+            <p>Press DEL to enter Setup, ESC to Skip Memory Test</p>
+        </div>
+    </div>
+
+    <div id="win1" class="win1-ui p-4">
+        <div class="border-2 border-white h-full relative">
+            <div class="bg-white text-blue-900 px-2 py-1 font-bold flex justify-between">
+                <span>MS-DOS Executive</span>
+                <span>[X]</span>
+            </div>
+            <div class="p-4">
+                <p>A: WINDOWS 1.01</p>
+                <div class="mt-4 grid grid-cols-4 gap-4 text-center text-xs">
+                    <div class="cursor-pointer hover:bg-white hover:text-blue-900 p-2">CALC.EXE</div>
+                    <div class="cursor-pointer hover:bg-white hover:text-blue-900 p-2">CLOCK.EXE</div>
+                    <div class="cursor-pointer hover:bg-white hover:text-blue-900 p-2">NOTEPAD.EXE</div>
+                    <div class="cursor-pointer hover:bg-white hover:text-blue-900 p-2">REVERSI.EXE</div>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="absolute bottom-4 left-4 text-xs underline">Shutdown (Back to BIOS)</button>
+        </div>
+    </div>
+
+    <script>
+        let settings = {
+            cpu: 0,
+            ram: 0
+        };
+
+        const cpuSpeeds = ["4.77 MHz", "8.0 MHz (Turbo)", "12.0 MHz"];
+        const ramSpeeds = ["256 KB", "512 KB", "640 KB"];
+
+        function toggleSetting(type) {
+            if(type === 'cpu') {
+                settings.cpu = (settings.cpu + 1) % 3;
+                document.getElementById('val-cpu').innerText = cpuSpeeds[settings.cpu];
+                document.getElementById('cpu-speed').innerText = cpuSpeeds[settings.cpu].split(' ')[0];
+            }
+            if(type === 'ram') {
+                settings.ram = (settings.ram + 1) % 3;
+                document.getElementById('val-ram').innerText = ramSpeeds[settings.ram];
+            }
+        }
+
+        function startWindows() {
+            const bios = document.getElementById('bios');
+            const win = document.getElementById('win1');
+            
+            bios.innerHTML = "<p>Verifying DMI Pool Data...</p><p>Booting from A:...</p>";
+            
+            setTimeout(() => {
+                bios.style.display = 'none';
+                win.style.display = 'block';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
