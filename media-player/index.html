@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Media Player</title>
+    <style>
+        :root { --primary: #007bff; --bg: #1a1a1a; }
+        .player-container { max-width: 800px; margin: 20px auto; background: #000; position: relative; overflow: hidden; font-family: sans-serif; border-radius: 8px; }
+        video { width: 100%; display: block; }
+        
+        /* Custom Controls */
+        .controls {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.7); display: flex; flex-wrap: wrap;
+            padding: 10px; align-items: center; opacity: 0; transition: opacity 0.3s;
+        }
+        .player-container:hover .controls { opacity: 1; }
+        
+        .btn { background: none; border: none; color: white; cursor: pointer; padding: 5px 10px; font-size: 16px; }
+        .btn:hover { color: var(--primary); }
+        
+        .progress-bar { flex: 1 1 100%; height: 5px; background: #444; cursor: pointer; margin-bottom: 10px; }
+        .progress-filled { height: 100%; background: var(--primary); width: 0%; }
+        
+        .volume-slider { width: 80px; cursor: pointer; }
+        .time-display { color: white; font-size: 14px; margin: 0 10px; }
+        select { background: #333; color: white; border: none; border-radius: 4px; padding: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="player-container" id="video_player">
+    <video id="main_video" src="https://www.w3schools.com/html/mov_bbb.mp4"></video>
+    
+    <div class="controls">
+        <div class="progress-bar" id="progress_bg">
+            <div class="progress-filled" id="progress_bar"></div>
+        </div>
+
+        <button class="btn" id="play_pause">Play</button>
+        <button class="btn" id="stop">Stop</button>
+        
+        <div class="time-display">
+            <span id="current_time">0:00</span> / <span id="duration">0:00</span>
+        </div>
+
+        <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.1" value="1">
+        
+        <button class="btn" id="mute">Mute</button>
+
+        <select id="playback_speed">
+            <option value="0.5">0.5x</option>
+            <option value="1" selected>Normal</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+        </select>
+
+        <button class="btn" id="fullscreen" style="margin-left: auto;">[ ]</button>
+    </div>
+</div>
+
+<script>
+    const player = document.getElementById('main_video');
+    const playBtn = document.getElementById('play_pause');
+    const progressBar = document.getElementById('progress_bar');
+    const progressBg = document.getElementById('progress_bg');
+    const timeCurr = document.getElementById('current_time');
+    const timeDur = document.getElementById('duration');
+
+    // Play/Pause Toggle
+    playBtn.addEventListener('click', () => {
+        if (player.paused) {
+            player.play();
+            playBtn.textContent = 'Pause';
+        } else {
+            player.pause();
+            playBtn.textContent = 'Play';
+        }
+    });
+
+    // Update Progress
+    player.addEventListener('timeupdate', () => {
+        const percent = (player.currentTime / player.duration) * 100;
+        progressBar.style.width = `${percent}%`;
+        
+        // Update Time text
+        let mins = Math.floor(player.currentTime / 60);
+        let secs = Math.floor(player.currentTime % 60);
+        timeCurr.textContent = `${mins}:${secs < 10 ? '0'+secs : secs}`;
+    });
+
+    // Set duration once metadata loads
+    player.addEventListener('loadedmetadata', () => {
+        let mins = Math.floor(player.duration / 60);
+        let secs = Math.floor(player.duration % 60);
+        timeDur.textContent = `${mins}:${secs < 10 ? '0'+secs : secs}`;
+    });
+
+    // Click to Seek
+    progressBg.addEventListener('click', (e) => {
+        const scrubTime = (e.offsetX / progressBg.offsetWidth) * player.duration;
+        player.currentTime = scrubTime;
+    });
+
+    // Volume & Speed
+    document.getElementById('volume').addEventListener('input', (e) => player.volume = e.target.value);
+    document.getElementById('playback_speed').addEventListener('change', (e) => player.playbackRate = e.target.value);
+
+    // Fullscreen
+    document.getElementById('fullscreen').addEventListener('click', () => {
+        if (player.requestFullscreen) player.requestFullscreen();
+        else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+    });
+</script>
+
+</body>
+</html>
+          
