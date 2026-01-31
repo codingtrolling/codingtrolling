@@ -3,65 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro PDF Reader</title>
+    <title>High-Res Continuous PDF Reader</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
-        :root { --toolbar-bg: #333; --viewer-bg: #525659; --accent: #007bff; }
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
+        :root { --bg: #323639; --toolbar: #202124; --accent: #8ab4f8; }
+        body { margin: 0; background: var(--bg); font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
         
-        /* Toolbar Styling */
-        .pdf-toolbar {
-            height: 50px; background: var(--toolbar-bg); color: white;
+        /* Fixed Toolbar */
+        .toolbar {
+            height: 56px; background: var(--toolbar); color: white;
             display: flex; align-items: center; padding: 0 20px;
-            gap: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10; position: relative;
-        }
-        
-        /* Main Layout */
-        .main-container { display: flex; height: calc(100% - 50px); background: var(--viewer-bg); }
-        
-        #pdf-render-container {
-            flex: 1; overflow: auto; display: flex; justify-content: center; padding: 20px;
+            gap: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 100;
         }
 
-        canvas { box-shadow: 0 0 10px rgba(0,0,0,0.5); margin-bottom: 20px; background: white; }
+        /* Scrollable Viewer Area */
+        #viewer-container {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px 0; scroll-behavior: smooth;
+        }
 
-        /* Tools */
-        .tool-group { display: flex; align-items: center; gap: 8px; border-right: 1px solid #555; padding-right: 15px; }
-        button { background: #444; border: 1px solid #666; color: white; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
-        button:hover { background: var(--accent); }
-        input[type="number"] { width: 40px; background: #222; color: white; border: 1px solid #555; text-align: center; }
-        .upload-btn { background: var(--accent); font-weight: bold; }
+        /* Page Styling */
+        .page-wrapper {
+            margin-bottom: 25px; box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            background: white; line-height: 0;
+        }
+        canvas { display: block; max-width: 100%; height: auto !important; }
+
+        /* UI Elements */
+        .btn { background: #3c4043; border: none; color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: #5f6368; }
+        .btn-primary { background: var(--accent); color: #202124; font-weight: bold; }
+        .zoom-controls { display: flex; align-items: center; gap: 10px; border-left: 1px solid #555; padding-left: 20px; }
+        #file-info { font-size: 14px; color: #bdc1c6; }
     </style>
 </head>
 <body>
 
-    <div class="pdf-toolbar">
-        <div class="tool-group">
-            <input type="file" id="file-upload" accept=".pdf" style="display:none">
-            <button class="upload-btn" onclick="document.getElementById('file-upload').click()">Open File</button>
+    <div class="toolbar">
+        <input type="file" id="file-upload" accept=".pdf" hidden>
+        <button class="btn btn-primary" onclick="document.getElementById('file-upload').click()">Open PDF</button>
+        
+        <div id="file-info">No file selected</div>
+
+        <div class="zoom-controls">
+            <button class="btn" id="zoom-out">−</button>
+            <span id="zoom-val">100%</span>
+            <button class="btn" id="zoom-in">+</button>
         </div>
 
-        <div class="tool-group">
-            <button id="prev-page">Prev</button>
-            <span>Page: <input type="number" id="page-num" value="1"> / <span id="page-count">0</span></span>
-            <button id="next-page">Next</button>
-        </div>
-
-        <div class="tool-group">
-            <button id="zoom-out">−</button>
-            <span id="zoom-percent">100%</span>
-            <button id="zoom-in">+</button>
-        </div>
-
-        <div class="tool-group">
-            <button onclick="window.print()">Print</button>
-            <button id="download">Download</button>
-        </div>
+        <button class="btn" style="margin-left: auto;" onclick="window.print()">Print</button>
     </div>
 
-    <div class="main-container">
-        <div id="pdf-render-container">
-            <canvas id="pdf-canvas"></canvas>
+    <div id="viewer-container">
+        <div style="color: #9aa0a6; margin-top: 100px;" id="placeholder">
+            Click "Open PDF" to start reading
         </div>
     </div>
 
@@ -69,58 +65,80 @@
     const pdfjsLib = window['pdfjs-dist/build/pdf'];
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-    let pdfDoc = null,
-        pageNum = 1,
-        pageIsRendering = false,
-        pageNumIsPending = null,
-        scale = 1.5,
-        canvas = document.getElementById('pdf-canvas'),
-        ctx = canvas.getContext('2d');
+    let currentPdf = null;
+    let currentScale = 1.5; // High-res base scale
+    const viewer = document.getElementById('viewer-container');
 
-    // Render the page
-    const renderPage = num => {
-        pageIsRendering = true;
-
-        pdfDoc.getPage(num).then(page => {
-            const viewport = page.getViewport({ scale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            const renderCtx = {
-                canvasContext: ctx,
-                viewport
-            };
-
-            page.render(renderCtx).promise.then(() => {
-                pageIsRendering = false;
-                if (pageNumIsPending !== null) {
-                    renderPage(pageNumIsPending);
-                    pageNumIsPending = null;
-                }
-            });
-
-            document.getElementById('page-num').value = num;
-        });
-    };
-
-    const queueRenderPage = num => {
-        if (pageIsRendering) {
-            pageNumIsPending = num;
-        } else {
-            renderPage(num);
-        }
-    };
-
-    // File Upload Logic
-    document.getElementById('file-upload').addEventListener('change', e => {
+    document.getElementById('file-upload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if (file.type !== 'application/pdf') {
-            alert("Please select a PDF file.");
-            return;
-        }
+        if (!file) return;
+        
+        document.getElementById('file-info').textContent = file.name;
+        document.getElementById('placeholder').style.display = 'none';
 
         const reader = new FileReader();
-        reader.onload = function() {
+        reader.onload = async function() {
+            const typedarray = new Uint8Array(this.result);
+            currentPdf = await pdfjsLib.getDocument(typedarray).promise;
+            renderAllPages();
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    async function renderAllPages() {
+        // Clear previous pages
+        viewer.innerHTML = '';
+        
+        for (let i = 1; i <= currentPdf.numPages; i++) {
+            const page = await currentPdf.getPage(i);
+            const container = document.createElement('div');
+            container.className = 'page-wrapper';
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Set scale for high resolution (Window Device Pixel Ratio)
+            const dpr = window.devicePixelRatio || 1;
+            const viewport = page.getViewport({ scale: currentScale * dpr });
+            
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            // Scale canvas CSS back down so it looks sharp but isn't giant
+            canvas.style.width = (viewport.width / dpr) + 'px';
+            canvas.style.height = (viewport.height / dpr) + 'px';
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            viewer.appendChild(container);
+            container.appendChild(canvas);
+            
+            await page.render(renderContext).promise;
+        }
+    }
+
+    // Zoom Logic
+    document.getElementById('zoom-in').addEventListener('click', () => {
+        currentScale += 0.25;
+        updateZoom();
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', () => {
+        if (currentScale <= 0.5) return;
+        currentScale -= 0.25;
+        updateZoom();
+    });
+
+    function updateZoom() {
+        document.getElementById('zoom-val').textContent = Math.round(currentScale * 100 / 1.5) + '%';
+        if (currentPdf) renderAllPages();
+    }
+</script>
+</body>
+</html>
             const typedarray = new Uint8Array(this.result);
 
             pdfjsLib.getDocument(typedarray).promise.then(pdfDoc_ => {
