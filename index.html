@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>codingtrolling // Utility Hub</title>
+    <meta name="description" content="codingtrolling Utility Hub - 8 High-performance tools including SusCraft, Windows 1 Emulator, and AI assistants.">
+    <meta name="keywords" content="codingtrolling, SusCraft, Windows 1 Emulator, Bozin AI, Utility Hub, Web Games">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://codingtrolling.com/" />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0b0f1a; color: #e2e8f0; }
+        /* Combined shared card styles */
         .card { 
             background: #161e2d; 
             border: 1px solid #1e293b; 
@@ -32,16 +39,7 @@
             transition: background 0.2s;
         }
         .btn-action:hover { background: #1d4ed8; }
-        /* Profile Image now acts as a link */
-        .profile-img { 
-            width: 42px; height: 42px; 
-            border-radius: 50%; 
-            border: 2px solid #3b82f6; 
-            object-fit: cover; 
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .profile-img:hover { transform: scale(1.1); }
+        .profile-img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; cursor: pointer; }
     </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col">
@@ -61,7 +59,7 @@
 
     <header class="py-16 px-6 text-center">
         <h2 class="text-5xl md:text-6xl font-black mb-4 tracking-tight">The <span class="text-blue-500">Utility</span> Hub</h2>
-        <p class="text-slate-400 max-w-2xl mx-auto">7 High-performance tools connected via Google Cloud.</p>
+        <p class="text-slate-400 max-w-2xl mx-auto">8 High-performance tools connected via Google Cloud.</p>
     </header>
 
     <main class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
@@ -110,7 +108,7 @@
         <div class="card">
             <div class="text-blue-500 text-3xl font-black mb-2">08.</div>
             <h3 class="text-xl font-bold mb-2">Windows 1 Emulator</h3>
-            <p class="text-slate-400 text-sm mb-6">A web-based BIOS environment running Windows 1.0. Modify system registers and clock settings.</p>
+            <p class="text-slate-400 text-sm mb-6">Full x86 hardware emulation. Use BIOS settings to boot Windows 1.</p>
             <a href="/win1-emulator" class="btn-action">Use BIOS</a>
         </div>
     </main>
@@ -128,14 +126,14 @@
             try {
                 const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
                 
-                // Save profile pic if not already set manually
+                // Set default skin if none exists
                 if(!localStorage.getItem('suscraft_skin')) {
                     localStorage.setItem('suscraft_skin', payload.picture);
                 }
 
                 document.getElementById('auth-zone').innerHTML = `
                     <div class="flex items-center gap-4">
-                        <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-red-500 font-black uppercase">Logout</button>
+                        <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-red-500 font-black uppercase transition">Logout</button>
                         <div class="relative group">
                             <a href="/settings">
                                 <img src="${payload.picture}" class="profile-img" alt="User">
