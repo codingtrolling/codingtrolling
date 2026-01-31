@@ -6,24 +6,34 @@
     <title>Login // codingtrolling</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Force body to take full height and center content perfectly */
         body { 
             background-color: #0b0f1a; 
             margin: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 100vh;
-            width: 100%;
+            padding: 0;
             overflow: hidden; 
         }
         canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+        
+        /* The "Center Lock" Container */
+        .login-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
         .glass { 
-            background: rgba(22, 30, 45, 0.7); 
+            background: rgba(22, 30, 45, 0.8); 
             backdrop-filter: blur(12px); 
             border: 1px solid rgba(255, 255, 255, 0.1); 
             width: 100%;
-            max-width: 400px; /* Keeps the box from getting too wide */
+            max-width: 400px;
         }
         input { background: #1e293b !important; border: 1px solid #334155 !important; color: white !important; }
         input:focus { border-color: #3b82f6 !important; outline: none; }
@@ -33,41 +43,142 @@
 
     <canvas id="bgCanvas"></canvas>
 
-    <div class="glass p-8 md:p-10 rounded-3xl shadow-2xl text-center mx-4">
-        <h1 class="text-3xl font-black tracking-tighter uppercase mb-2 text-white">
-            coding<span class="text-blue-500">trolling</span>
-        </h1>
-        <p id="authSubtitle" class="text-slate-400 text-sm mb-8 font-medium">Login to your Utility Hub account</p>
+    <div class="login-wrapper">
+        <div class="glass p-8 md:p-10 rounded-3xl shadow-2xl text-center">
+            <h1 class="text-3xl font-black tracking-tighter uppercase mb-2 text-white">
+                coding<span class="text-blue-500">trolling</span>
+            </h1>
+            <p id="authSubtitle" class="text-slate-400 text-sm mb-8 font-medium">Login to your Utility Hub account</p>
 
-        <form id="authForm" class="space-y-4 text-left">
-            <div>
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Email</label>
-                <input type="email" id="email" required placeholder="name@example.com" class="w-full mt-1 p-3 rounded-xl text-sm transition-all">
-            </div>
-            <div>
-                <label class="text-xs font-bold text-slate-500 uppercase ml-1">Password</label>
-                <input type="password" id="password" required placeholder="••••••••" class="w-full mt-1 p-3 rounded-xl text-sm transition-all">
-            </div>
-            <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold text-white transition-all shadow-lg shadow-blue-900/20 mt-2">
-                Login to CodingTrolling
-            </button>
-        </form>
+            <form id="authForm" class="space-y-4 text-left">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Email</label>
+                    <input type="email" id="email" required placeholder="name@example.com" class="w-full mt-1 p-3 rounded-xl text-sm transition-all">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••" class="w-full mt-1 p-3 rounded-xl text-sm transition-all">
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold text-white transition-all shadow-lg shadow-blue-900/20 mt-2">
+                    Login to CodingTrolling
+                </button>
+            </form>
 
-        <div class="flex items-center my-6">
-            <div class="flex-grow border-t border-slate-700"></div>
-            <span class="mx-3 text-slate-500 text-xs font-bold uppercase">or</span>
-            <div class="flex-grow border-t border-slate-700"></div>
+            <div class="flex items-center my-6">
+                <div class="flex-grow border-t border-slate-700"></div>
+                <span class="mx-3 text-slate-500 text-xs font-bold uppercase">or</span>
+                <div class="flex-grow border-t border-slate-700"></div>
+            </div>
+
+            <div class="space-y-3">
+                <button id="googleBtn" type="button" class="w-full flex items-center justify-center gap-3 bg-white text-black py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                    Login to Google
+                </button>
+                <button type="button" onclick="alert('Apple ID coming soon!')" class="w-full flex items-center justify-center gap-3 bg-black text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all border border-slate-700">
+                    <img src="https://www.svgrepo.com/show/443329/brand-apple.svg" class="w-5 h-5 invert" alt="Apple">
+                    Login to Apple ID
+                </button>
+            </div>
+
+            <p class="mt-8 text-slate-500 text-xs font-medium">
+                <span id="toggleText">Don't have an account?</span> 
+                <button type="button" onclick="toggleAuthMode()" id="authLink" class="text-blue-500 hover:underline bg-transparent border-none p-0 cursor-pointer">Create one</button>
+            </p>
         </div>
+    </div>
 
-        <div class="space-y-3">
-            <button id="googleBtn" type="button" class="w-full flex items-center justify-center gap-3 bg-white text-black py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                Login to Google
-            </button>
-            <button type="button" onclick="alert('Apple ID coming soon!')" class="w-full flex items-center justify-center gap-3 bg-black text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all border border-slate-700">
-                <img src="https://www.svgrepo.com/show/443329/brand-apple.svg" class="w-5 h-5 invert" alt="Apple">
-                Login to Apple ID
-            </button>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoLIFRY7goBFCxSv6iHhaaqWEsT7F0xso",
+            authDomain: "auth-c2ec5.firebaseapp.com",
+            projectId: "auth-c2ec5",
+            storageBucket: "auth-c2ec5.firebasestorage.app",
+            messagingSenderId: "926109076601",
+            appId: "1:926109076601:web:c873c5de72d2c0da2098a8",
+            measurementId: "G-21EGXN4KWJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        let isSignupMode = false;
+        window.toggleAuthMode = () => {
+            isSignupMode = !isSignupMode;
+            document.getElementById('submitBtn').innerText = isSignupMode ? "Create Account" : "Login to CodingTrolling";
+            document.getElementById('authSubtitle').innerText = isSignupMode ? "Join the Utility Hub" : "Login to your Utility Hub account";
+            document.getElementById('authLink').innerText = isSignupMode ? "Login instead" : "Create one";
+            document.getElementById('toggleText').innerText = isSignupMode ? "Already have an account?" : "Don't have an account?";
+        };
+
+        document.getElementById('googleBtn').addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                localStorage.setItem('user', JSON.stringify(result.user));
+                window.location.href = "/";
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                let userCredential;
+                if (isSignupMode) {
+                    userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                } else {
+                    userCredential = await signInWithEmailAndPassword(auth, email, password);
+                }
+                localStorage.setItem('user', JSON.stringify(userCredential.user));
+                window.location.href = "/";
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    </script>
+
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for(let i = 0; i < 60; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speed: Math.random() * 0.5 + 0.2
+                });
+            }
+        }
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+            particles.forEach(p => {
+                p.y -= p.speed;
+                if(p.y < 0) p.y = canvas.height;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+        window.addEventListener('resize', init);
+        init();
+        animate();
+    </script>
+</body>
+</html>
         </div>
 
         <p class="mt-8 text-slate-500 text-xs font-medium">
