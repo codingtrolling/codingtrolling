@@ -7,54 +7,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        :root { --android-blue: #3b82f6; --bg-url: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070'); }
+        :root { 
+            --android-blue: #3b82f6; 
+            --bg-url: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070'); 
+        }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         
         /* Boot Animation */
         #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .logo-anim { font-size: 2rem; font-weight: 900; color: #fff; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.95); } }
+        .logo-anim { font-size: 2.5rem; font-weight: 900; color: #fff; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.9); } }
 
         /* OS UI */
         #os-container { position: relative; width: 100%; height: 100%; background: var(--bg-url) center/cover; display: none; }
-        .status-bar { height: 30px; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-size: 12px; font-weight: bold; color: white; position: absolute; top: 0; width: 100%; z-index: 100; }
         
-        /* Shade / Control Center */
-        #control-center { position: absolute; top: -100%; left: 0; width: 100%; height: 80%; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); z-index: 200; transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 0 0 30px 30px; padding: 40px 20px; }
+        /* Status Bar */
+        .status-bar { height: 30px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-size: 12px; font-weight: bold; color: white; position: absolute; top: 0; width: 100%; z-index: 100; cursor: ns-resize; }
+        
+        /* Control Center Shade */
+        #control-center { position: absolute; top: -100%; left: 0; width: 100%; height: 70%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(25px); z-index: 200; transition: top 0.5s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 0 0 30px 30px; padding: 50px 25px; }
         #control-center.active { top: 0; }
-        .toggle-btn { background: #1e293b; border-radius: 20px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: white; cursor: pointer; transition: 0.2s; }
-        .toggle-btn.on { background: var(--android-blue); }
+        .toggle-btn { background: #1e293b; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); }
+        .toggle-btn.on { background: var(--android-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
 
         /* App Grid */
-        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 60px 20px; }
-        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
-        .app-img { width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 70px 20px; }
+        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: transform 0.1s; }
+        .app-icon:active { transform: scale(0.9); }
+        .app-img { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
 
         /* Window System */
-        .window { position: absolute; inset: 0; background: #0f172a; z-index: 50; display: none; flex-direction: column; }
-        .window-header { height: 60px; display: flex; align-items: center; padding: 0 20px; gap: 15px; background: #1e293b; color: white; }
-        .window-content { flex: 1; overflow-y: auto; padding: 15px; }
+        .window { position: absolute; inset: 0; background: #0b0f1a; z-index: 500; display: none; flex-direction: column; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .window-header { height: 65px; display: flex; align-items: center; padding: 0 20px; gap: 15px; background: #161e2d; color: white; border-bottom: 1px solid #1e293b; }
+        .window-content { flex: 1; overflow-y: auto; }
+
+        /* Music Disc Animation */
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin 8s linear infinite; }
     </style>
 </head>
 <body>
 
     <div id="boot-screen">
         <div class="logo-anim uppercase tracking-tighter">coding<span class="text-blue-500">trolling</span></div>
-        <div class="mt-4 text-slate-500 text-xs uppercase font-bold tracking-widest">Powered by Android</div>
+        <div class="mt-4 text-slate-600 text-[10px] uppercase font-bold tracking-widest">Starting Android...</div>
     </div>
 
     <div id="os-container">
         <div class="status-bar" onclick="toggleShade()">
-            <div id="stat-clock">12:00</div>
-            <div class="flex gap-2 items-center">
+            <div id="stat-clock">00:00</div>
+            <div class="flex gap-3 items-center">
                 <i id="wifi-icon" class="bi bi-wifi"></i>
-                <i class="bi bi-battery-full"></i>
-                <span id="stat-batt">85%</span>
+                <i class="bi bi-battery-full text-green-500"></i>
+                <span id="stat-batt">98%</span>
             </div>
         </div>
 
         <div id="control-center">
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-3 gap-4 mb-8">
                 <div class="toggle-btn" id="t-wifi" onclick="toggleSetting('wifi')">
                     <i class="bi bi-wifi text-2xl"></i><span class="text-[10px] font-bold">Wi-Fi</span>
                 </div>
@@ -65,9 +76,350 @@
                     <i class="bi bi-volume-up text-2xl"></i><span class="text-[10px] font-bold">Volume</span>
                 </div>
             </div>
-            <div class="mt-8">
-                <label class="text-xs text-slate-400 font-bold">BRIGHTNESS</label>
-                <input type="range" class="w-full mt-2 accent-blue-500">
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-[10px] text-slate-400 font-bold mb-2"><span>BRIGHTNESS</span><i class="bi bi-sun"></i></div>
+                    <input type="range" class="w-full accent-blue-500 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </div>
+            <button class="absolute bottom-10 left-1/2 -translate-x-1/2 text-slate-500 font-black text-xs tracking-widest" onclick="toggleShade()">CLOSE SHADE</button>
+        </div>
+
+        <div class="app-grid">
+            <div class="app-icon" onclick="openApp('youtube')">
+                <div class="app-img bg-red-600"><i class="bi bi-youtube"></i></div>
+                <span class="text-white text-[10px] font-bold mt-1">YouTube</span>
+            </div>
+            <div class="app-icon" onclick="openApp('music')">
+                <div class="app-img bg-pink-500"><i class="bi bi-music-note-beamed"></i></div>
+                <span class="text-white text-[10px] font-bold mt-1">Music</span>
+            </div>
+            <div class="app-icon" onclick="openApp('notes')">
+                <div class="app-img bg-yellow-500"><i class="bi bi-journal-text"></i></div>
+                <span class="text-white text-[10px] font-bold mt-1">Notes</span>
+            </div>
+            <div class="app-icon" onclick="openApp('clock')">
+                <div class="app-img bg-indigo-600"><i class="bi bi-clock-fill"></i></div>
+                <span class="text-white text-[10px] font-bold mt-1">Clock</span>
+            </div>
+            <div class="app-icon" onclick="openApp('terminal')">
+                <div class="app-img bg-black border border-slate-700"><i class="bi bi-terminal"></i></div>
+                <span class="text-white text-[10px] font-bold mt-1">Terminal</span>
+            </div>
+            <div class="app-icon" onclick="openApp('settings')">
+                <div class="app-img bg-slate-600"><i class="bi bi-gear-fill"></i></div>
+                <span class="text-white text-[10px] font-bold mt-1">Settings</span>
+            </div>
+        </div>
+
+        <div id="app-youtube" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('youtube')"></i>
+                <span class="font-bold">YouTube</span>
+            </div>
+            <div class="window-content p-4 space-y-6">
+                <iframe class="w-full aspect-video rounded-xl" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+                <iframe class="w-full aspect-video rounded-xl" src="https://www.youtube.com/embed/jfKfPfyJRdk" frameborder="0" allowfullscreen></iframe>
+                <iframe class="w-full aspect-video rounded-xl" src="https://www.youtube.com/embed/9bZkp7q19f0" frameborder="0" allowfullscreen></iframe>
+                <iframe class="w-full aspect-video rounded-xl" src="https://www.youtube.com/embed/3JZ_D3ELwOQ" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <div id="app-music" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('music')"></i>
+                <span class="font-bold">Music</span>
+            </div>
+            <div class="window-content flex flex-col items-center justify-center p-8">
+                <div class="w-48 h-48 bg-slate-800 rounded-full flex items-center justify-center mb-8 border-4 border-pink-500/20 shadow-2xl animate-spin-slow">
+                    <i class="bi bi-vinyl-fill text-7xl text-pink-500"></i>
+                </div>
+                <input type="file" id="music-upload" accept="audio/*" class="hidden" onchange="loadMusic(event)">
+                <label for="music-upload" class="bg-pink-600 hover:bg-pink-500 px-8 py-3 rounded-full font-bold text-sm cursor-pointer mb-6 transition">CHOOSE TRACK</label>
+                <p id="song-title" class="text-slate-400 text-xs mb-8">No file selected</p>
+                <audio id="main-audio" controls class="w-full brightness-90"></audio>
+            </div>
+        </div>
+
+        <div id="app-notes" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('notes')"></i>
+                <span class="font-bold">Notes</span>
+            </div>
+            <div class="window-content">
+                <textarea id="notes-textarea" oninput="saveNotes()" class="w-full h-full bg-[#0b0f1a] p-6 text-slate-200 outline-none resize-none text-lg leading-relaxed" placeholder="Type your thoughts here..."></textarea>
+            </div>
+        </div>
+
+        <div id="app-clock" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('clock')"></i>
+                <span class="font-bold">Clock</span>
+            </div>
+            <div class="window-content flex flex-col items-center justify-center">
+                <h2 id="big-clock" class="text-7xl font-black mb-4 tracking-tighter">00:00:00</h2>
+                <p id="big-date" class="text-blue-500 font-bold tracking-[0.3em] uppercase text-xs"></p>
+            </div>
+        </div>
+
+        <div id="app-terminal" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('terminal')"></i>
+                <span class="font-bold text-green-500 font-mono">system_root</span>
+            </div>
+            <div class="window-content bg-black p-4 font-mono text-green-400 text-xs">
+                <p>> BOOT_COMPLETE: OK</p>
+                <p>> STORAGE_MOUNT: /dev/block/sda1</p>
+                <p>> STATUS: System Encrypted</p>
+                <p class="mt-4">root@codingtrolling:~$ <span class="animate-pulse">_</span></p>
+            </div>
+        </div>
+
+        <div id="app-settings" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('settings')"></i>
+                <span class="font-bold">Settings</span>
+            </div>
+            <div class="window-content p-6 space-y-4">
+                <div class="bg-slate-800/50 p-4 rounded-2xl">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Device</p>
+                    <p class="font-bold text-white">CodingTrolling Pro Simulator</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-2xl">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Android Version</p>
+                    <p class="font-bold text-white">14.0 (Cloud Edition)</p>
+                </div>
+                <button onclick="resetOS()" class="w-full bg-red-600/10 text-red-500 py-4 rounded-2xl font-black text-xs tracking-widest mt-10">FACTORY RESET</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Data & Persistence Initialization
+        let state = JSON.parse(localStorage.getItem('android_setup')) || {
+            wifi: true,
+            plane: false,
+            vol: true
+        };
+
+        const savedNotes = localStorage.getItem('android_notes') || "";
+        document.getElementById('notes-textarea').value = savedNotes;
+
+        // 2. Boot Sequence
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('boot-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('boot-screen').style.display = 'none';
+                    document.getElementById('os-container').style.display = 'block';
+                    updateSystemUI();
+                }, 500);
+            }, 3000);
+        });
+
+        // 3. System UI Core
+        function updateSystemUI() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('stat-clock').innerText = timeStr;
+            
+            // Sync toggles with state
+            document.getElementById('t-wifi').className = `toggle-btn ${state.wifi ? 'on' : ''}`;
+            document.getElementById('t-plane').className = `toggle-btn ${state.plane ? 'on' : ''}`;
+            document.getElementById('t-vol').className = `toggle-btn ${state.vol ? 'on' : ''}`;
+            document.getElementById('wifi-icon').className = state.wifi ? 'bi bi-wifi' : 'bi bi-wifi-off opacity-30';
+            
+            localStorage.setItem('android_setup', JSON.stringify(state));
+        }
+
+        // 4. Interaction Handlers
+        function toggleShade() {
+            document.getElementById('control-center').classList.toggle('active');
+        }
+
+        function toggleSetting(key) {
+            state[key] = !state[key];
+            updateSystemUI();
+        }
+
+        function openApp(id) {
+            document.getElementById(`app-${id}`).style.display = 'flex';
+        }
+
+        function closeApp(id) {
+            document.getElementById(`app-${id}`).style.display = 'none';
+        }
+
+        // 5. App Logic
+        function saveNotes() {
+            localStorage.setItem('android_notes', document.getElementById('notes-textarea').value);
+        }
+
+        function loadMusic(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const audio = document.getElementById('main-audio');
+                document.getElementById('song-title').innerText = file.name;
+                audio.src = url;
+                audio.play();
+            }
+        }
+
+        function updateClocks() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second: '2-digit'});
+            if(document.getElementById('big-clock')) {
+                document.getElementById('big-clock').innerText = timeStr;
+                document.getElementById('big-date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+            }
+            document.getElementById('stat-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function resetOS() {
+            if(confirm("Erase all data?")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+
+        setInterval(updateClocks, 1000);
+    </script>
+</body>
+</html>
+            <div class="window-content flex flex-col items-center justify-center">
+                <h2 id="big-clock" class="text-7xl font-black mb-4 tracking-tighter">00:00:00</h2>
+                <p id="big-date" class="text-blue-500 font-bold tracking-[0.3em] uppercase text-xs"></p>
+            </div>
+        </div>
+
+        <div id="app-terminal" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('terminal')"></i>
+                <span class="font-bold text-green-500 font-mono">system_root</span>
+            </div>
+            <div class="window-content bg-black p-4 font-mono text-green-400 text-xs">
+                <p>> BOOT_COMPLETE: OK</p>
+                <p>> STORAGE_MOUNT: /dev/block/sda1</p>
+                <p>> STATUS: System Encrypted</p>
+                <p class="mt-4">root@codingtrolling:~$ <span class="animate-pulse">_</span></p>
+            </div>
+        </div>
+
+        <div id="app-settings" class="window">
+            <div class="window-header">
+                <i class="bi bi-chevron-left text-xl" onclick="closeApp('settings')"></i>
+                <span class="font-bold">Settings</span>
+            </div>
+            <div class="window-content p-6 space-y-4">
+                <div class="bg-slate-800/50 p-4 rounded-2xl">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Device</p>
+                    <p class="font-bold text-white">CodingTrolling Pro Simulator</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-2xl">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Android Version</p>
+                    <p class="font-bold text-white">14.0 (Cloud Edition)</p>
+                </div>
+                <button onclick="resetOS()" class="w-full bg-red-600/10 text-red-500 py-4 rounded-2xl font-black text-xs tracking-widest mt-10">FACTORY RESET</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Data & Persistence Initialization
+        let state = JSON.parse(localStorage.getItem('android_setup')) || {
+            wifi: true,
+            plane: false,
+            vol: true
+        };
+
+        const savedNotes = localStorage.getItem('android_notes') || "";
+        document.getElementById('notes-textarea').value = savedNotes;
+
+        // 2. Boot Sequence
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('boot-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('boot-screen').style.display = 'none';
+                    document.getElementById('os-container').style.display = 'block';
+                    updateSystemUI();
+                }, 500);
+            }, 3000);
+        });
+
+        // 3. System UI Core
+        function updateSystemUI() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('stat-clock').innerText = timeStr;
+            
+            // Sync toggles with state
+            document.getElementById('t-wifi').className = `toggle-btn ${state.wifi ? 'on' : ''}`;
+            document.getElementById('t-plane').className = `toggle-btn ${state.plane ? 'on' : ''}`;
+            document.getElementById('t-vol').className = `toggle-btn ${state.vol ? 'on' : ''}`;
+            document.getElementById('wifi-icon').className = state.wifi ? 'bi bi-wifi' : 'bi bi-wifi-off opacity-30';
+            
+            localStorage.setItem('android_setup', JSON.stringify(state));
+        }
+
+        // 4. Interaction Handlers
+        function toggleShade() {
+            document.getElementById('control-center').classList.toggle('active');
+        }
+
+        function toggleSetting(key) {
+            state[key] = !state[key];
+            updateSystemUI();
+        }
+
+        function openApp(id) {
+            document.getElementById(`app-${id}`).style.display = 'flex';
+        }
+
+        function closeApp(id) {
+            document.getElementById(`app-${id}`).style.display = 'none';
+        }
+
+        // 5. App Logic
+        function saveNotes() {
+            localStorage.setItem('android_notes', document.getElementById('notes-textarea').value);
+        }
+
+        function loadMusic(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const audio = document.getElementById('main-audio');
+                document.getElementById('song-title').innerText = file.name;
+                audio.src = url;
+                audio.play();
+            }
+        }
+
+        function updateClocks() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second: '2-digit'});
+            if(document.getElementById('big-clock')) {
+                document.getElementById('big-clock').innerText = timeStr;
+                document.getElementById('big-date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+            }
+            document.getElementById('stat-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function resetOS() {
+            if(confirm("Erase all data?")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+
+        setInterval(updateClocks, 1000);
+    </script>
+</body>
+</html>
             </div>
             <button class="mt-auto w-full py-4 text-slate-500 font-bold" onclick="toggleShade()">CLOSE</button>
         </div>
