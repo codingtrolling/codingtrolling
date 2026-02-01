@@ -13,11 +13,20 @@ body { margin:0; background:#0b0f1a; color:white; font-family:sans-serif; overfl
 canvas { display:block; position:fixed; inset:0; z-index:0; }
 .ui { position:fixed; z-index:10; }
 #menu {
-  inset:0; display:flex; justify-content:center; align-items:center;
-  background:rgba(0,0,0,0.85);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999; /* <- important! */
 }
-.btn {
-  background:#2563eb; padding:14px 28px; border-radius:12px; font-weight:700; cursor:pointer; font-size:18px; color:white; border:none;
+
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;       /* <- canvas behind menu */
+  pointer-events: none; /* <- do not block clicks */
 }
 #inventory {
   position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
