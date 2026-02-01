@@ -6,7 +6,9 @@
 <title>CodingTrolling Android Launcher</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body, html { margin:0; padding:0; height:100%; font-family:sans-serif; background:#0b0f1a; overflow:hidden; color:#e2e8f0; }
+/* BODY */
+body, html { margin:0; padding:0; height:100%; font-family:sans-serif; background:#0b0f1a; color:#e2e8f0; overflow:hidden; }
+
 /* BOOT ANIMATION */
 #boot-screen {
   position:absolute; inset:0; background:#0b0f1a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000; transition:opacity 1s;
@@ -16,60 +18,31 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
 #boot-progress { height:6px; background:#2563eb; width:0; transition:width 0.1s; border-radius:3px; }
 
 /* LAUNCHER */
-#launcher { display:none; position:relative; height:100vh; width:100vw; }
+#launcher { display:none; position:relative; height:100vh; width:100vw; overflow:hidden; flex-direction:column; }
 
 /* WALLPAPER */
 #wallpaper { position:absolute; inset:0; background-size:cover; background-position:center; z-index:0; }
 
 /* STATUS BAR */
-#status-bar { height:28px; background:rgba(22,30,45,0.8); color:white; display:flex; justify-content:space-between; align-items:center; padding:0 8px; font-size:12px; z-index:10; position:absolute; top:0; width:100%; cursor:pointer; border-bottom:1px solid #1e293b; }
+#status-bar { height:28px; background:rgba(22,30,45,0.8); color:white; display:flex; justify-content:space-between; align-items:center; padding:0 8px; font-size:12px; z-index:20; position:absolute; top:0; width:100%; cursor:pointer; border-bottom:1px solid #1e293b; }
 #status-bar .left, #status-bar .right { display:flex; gap:6px; align-items:center; }
 #clock { font-weight:bold; }
 
 /* NOTIFICATIONS */
-#notification-shade { position:absolute; top:0; left:0; right:0; background:rgba(22,30,45,0.95); color:white; padding:12px; transform:translateY(-100%); transition:transform 0.3s; z-index:50; border-bottom:1px solid #1e293b; }
+#notification-shade { position:absolute; top:0; left:0; right:0; background:rgba(22,30,45,0.95); color:white; padding:12px; transform:translateY(-100%); transition:transform 0.3s; z-index:30; border-bottom:1px solid #1e293b; }
 
 /* CONTROL CENTER */
-#control-center { position:absolute; bottom:0; left:0; right:0; background:rgba(22,30,45,0.95); padding:12px; transform:translateY(100%); transition:transform 0.3s; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; z-index:50; }
-.control-btn { background:#161e2d; padding:12px; text-align:center; border-radius:1rem; cursor:pointer; font-size:12px; user-select:none; transition:0.2s; }
+#control-center { position:absolute; bottom:0; left:0; right:0; background:rgba(22,30,45,0.95); padding:12px; transform:translateY(100%); transition:transform 0.3s; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; z-index:30; }
+.control-btn { background:#161e2d; padding:6px 10px; text-align:center; border-radius:1rem; cursor:pointer; font-size:0.75rem; user-select:none; transition:0.2s; min-height:40px; display:flex; align-items:center; justify-content:center; }
 .control-btn:hover { background:#2563eb; }
 
-/* APPS GRID BUTTONS */
-.app { 
-    background:#161e2d; 
-    color:white; 
-    text-align:center; 
-    padding:6px 12px; /* reasonable padding */
-    border-radius:1.5rem; 
-    cursor:pointer; 
-    transition:0.3s; 
-    border:1px solid #1e293b; 
-    font-size:0.875rem; 
-    display:flex; 
-    align-items:center; 
-    justify-content:center;
-    min-height:48px; /* ensure button is visible */
-}
-
-/* CONTROL CENTER BUTTONS */
-.control-btn { 
-    background:#161e2d; 
-    padding:6px 10px; /* smaller padding */
-    text-align:center; 
-    border-radius:1rem; 
-    cursor:pointer; 
-    font-size:0.75rem; 
-    user-select:none; 
-    transition:0.2s; 
-    min-height:40px; /* ensure visible */
-    display:flex; 
-    align-items:center; 
-    justify-content:center;
-}
-.control-btn:hover { background:#2563eb; }
+/* APPS GRID */
+#apps { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; position:absolute; top:36px; left:0; right:0; padding:20px; z-index:10; }
+.app { background:#161e2d; color:white; text-align:center; padding:8px 12px; border-radius:1.5rem; cursor:pointer; transition:0.3s; border:1px solid #1e293b; font-size:0.875rem; display:flex; align-items:center; justify-content:center; min-height:48px; }
+.app:hover { background:#2563eb; }
 
 /* APP WINDOWS */
-.app-window { position:absolute; inset:20px; background:#161e2d; border-radius:1.5rem; z-index:20; display:none; flex-direction:column; border:1px solid #1e293b; box-shadow:0 15px 30px rgba(0,0,0,0.4); }
+.app-window { position:absolute; inset:20px; background:#161e2d; border-radius:1.5rem; z-index:40; display:none; flex-direction:column; border:1px solid #1e293b; box-shadow:0 15px 30px rgba(0,0,0,0.4); }
 .app-window header { background:#0f172a; padding:10px; font-weight:bold; display:flex; justify-content:space-between; border-radius:1.5rem 1.5rem 0 0; border-bottom:1px solid #1e293b; }
 .app-window .content { flex-grow:1; padding:12px; overflow:auto; color:white; }
 .app-window button.close { background:red; color:white; border:none; padding:4px 8px; border-radius:0.5rem; cursor:pointer; }
@@ -212,4 +185,4 @@ document.getElementById("status-bar").addEventListener("contextmenu",(e)=>{
 </script>
 
 </body>
-</html>
+    </html>
