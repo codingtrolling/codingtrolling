@@ -10,11 +10,12 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:
 
 /* ================= BOOT ANIMATION ================= */
 #boot-screen{
-    position:absolute; inset:0; background:#0b0f1a; color:#2563eb;
-    display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:sans-serif;
+    position:absolute; inset:0; background:#0b0f1a; display:flex; flex-direction:column; justify-content:center; align-items:center;
     z-index:1000; transition: opacity 1s ease;
 }
 #boot-screen.fade-out{ opacity:0; pointer-events:none; }
+
+#boot-screen h1 span{ color:#00ffff; } /* CODING TROLLING colors */
 
 /* ================= LAUNCHER ================= */
 #launcher{
@@ -29,7 +30,7 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:
 /* Status Bar */
 #status-bar{
     height:24px; background:rgba(0,0,0,0.5); color:white; display:flex; align-items:center; justify-content:space-between;
-    padding:0 8px; font-size:12px; position:absolute; top:0; width:100%; z-index:10;
+    padding:0 8px; font-size:12px; position:absolute; top:0; width:100%; z-index:10; cursor:pointer;
 }
 #status-bar .left, #status-bar .right{ display:flex; gap:6px; align-items:center; }
 
@@ -68,7 +69,7 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:
 .app-window .content{ flex-grow:1; padding:12px; overflow:auto; color:white; }
 .app-window button.close{ background:red; color:white; border:none; padding:4px 8px; border-radius:0.5rem; cursor:pointer; }
 
-/* Clock */
+/* Clock App */
 #status-bar #clock { font-weight:bold; }
 </style>
 </head>
@@ -76,10 +77,10 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:
 
 <!-- ================= BOOT ANIMATION ================= -->
 <div id="boot-screen">
-    <h1 class="text-4xl font-black mb-4">CODING<span class="text-cyan-400">TROLLING</span></h1>
+    <h1 class="text-4xl font-black mb-4">CODING<span>TROLLING</span></h1>
     <p>Booting Android...</p>
     <div class="mt-4 w-48 h-2 bg-slate-800 rounded-full overflow-hidden">
-        <div id="boot-progress" class="h-2 bg-blue-500 w-0"></div>
+        <div id="boot-progress" class="h-2 bg-cyan-400 w-0"></div>
     </div>
 </div>
 
@@ -91,17 +92,13 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:
 
     <!-- Status Bar -->
     <div id="status-bar">
-        <div class="left">
-            <span id="battery">🔋 100%</span>
-        </div>
-        <div class="right">
-            <span id="clock"></span>
-        </div>
+        <div class="left"><span id="battery">🔋 100%</span></div>
+        <div class="right"><span id="clock"></span></div>
     </div>
 
     <!-- Notification Shade -->
     <div id="notification-shade">
-        <p>Notifications go here (simulated)</p>
+        <p>Notifications (simulated)</p>
     </div>
 
     <!-- Control Center -->
@@ -118,7 +115,7 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:
         <div class="app" onclick="openApp('youtube')">YouTube</div>
         <div class="app" onclick="openApp('notes')">Notes</div>
         <div class="app" onclick="openApp('music')">Music</div>
-        <div class="app" onclick="openApp('clock')">Clock</div>
+        <div class="app" onclick="openApp('clock-app')">Clock</div>
         <div class="app" onclick="openApp('terminal')">Terminal</div>
         <div class="app" onclick="openApp('settings')">Settings</div>
     </div>
@@ -139,50 +136,42 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:
     <div id="notes" class="app-window flex flex-col">
         <header>Notes <button class="close" onclick="closeApp('notes')">X</button></header>
         <div class="content">
-            <textarea class="w-full h-full bg-slate-900 text-white p-2 rounded-lg" placeholder="Write your notes..."></textarea>
+            <textarea class="w-full h-full bg-slate-900 text-white p-2 rounded-lg" placeholder="Write notes..."></textarea>
         </div>
     </div>
 
     <div id="music" class="app-window flex flex-col">
         <header>Music <button class="close" onclick="closeApp('music')">X</button></header>
-        <div class="content">
-            <p>Simulated music player.</p>
-        </div>
+        <div class="content">Simulated music player</div>
     </div>
 
-    <div id="clock" class="app-window flex flex-col">
-        <header>Clock <button class="close" onclick="closeApp('clock')">X</button></header>
-        <div class="content text-center text-3xl" id="clock-app">00:00:00</div>
+    <div id="clock-app" class="app-window flex flex-col">
+        <header>Clock <button class="close" onclick="closeApp('clock-app')">X</button></header>
+        <div class="content text-center text-3xl" id="clock-display">00:00:00</div>
     </div>
 
     <div id="terminal" class="app-window flex flex-col">
         <header>Terminal <button class="close" onclick="closeApp('terminal')">X</button></header>
-        <div class="content">
-            <p>Fake terminal. Commands not real.</p>
-        </div>
+        <div class="content">Fake terminal. Commands not real.</div>
     </div>
 
     <div id="settings" class="app-window flex flex-col">
         <header>Settings <button class="close" onclick="closeApp('settings')">X</button></header>
-        <div class="content">
-            <p>Simulated settings page.</p>
-        </div>
+        <div class="content">Simulated settings page.</div>
     </div>
 
 </div>
 
-<!-- ================= SCRIPT ================= -->
-
 <script>
-// ================= BOOT ANIMATION =================
-let progress = 0;
-const bootProgress = document.getElementById("boot-progress");
-const bootScreen = document.getElementById("boot-screen");
-const launcher = document.getElementById("launcher");
+// ================= BOOT =================
+let progress=0;
+const bootProgress=document.getElementById("boot-progress");
+const bootScreen=document.getElementById("boot-screen");
+const launcher=document.getElementById("launcher");
 
-const bootInterval = setInterval(()=>{
-    progress += 1;
-    bootProgress.style.width = progress + "%";
+const bootInterval=setInterval(()=>{
+    progress+=1;
+    bootProgress.style.width=progress+"%";
     if(progress>=100){
         clearInterval(bootInterval);
         bootScreen.classList.add("fade-out");
@@ -192,48 +181,42 @@ const bootInterval = setInterval(()=>{
 
 // ================= CLOCK =================
 function updateClock(){
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString();
-    document.getElementById("clock").textContent = timeStr;
-    const clockApp = document.getElementById("clock-app");
-    if(clockApp) clockApp.textContent = timeStr;
+    const now=new Date();
+    const tStr=now.toLocaleTimeString();
+    document.getElementById("clock").textContent=tStr;
+    const clockDisplay=document.getElementById("clock-display");
+    if(clockDisplay) clockDisplay.textContent=tStr;
 }
 setInterval(updateClock,1000);
 updateClock();
 
-// ================= BATTERY SIM =================
-let batteryLevel = 100;
+// ================= BATTERY =================
+let batteryLevel=100;
 setInterval(()=>{
-    batteryLevel -= Math.random()*0.1;
-    if(batteryLevel<10) batteryLevel = 100;
-    document.getElementById("battery").textContent = `🔋 ${Math.floor(batteryLevel)}%`;
+    batteryLevel-=Math.random()*0.1;
+    if(batteryLevel<10) batteryLevel=100;
+    document.getElementById("battery").textContent=`🔋 ${Math.floor(batteryLevel)}%`;
 },2000);
 
 // ================= APPS =================
-function openApp(id){
-    document.getElementById(id).style.display="flex";
-}
-function closeApp(id){
-    document.getElementById(id).style.display="none";
-}
+function openApp(id){ document.getElementById(id).style.display="flex"; }
+function closeApp(id){ document.getElementById(id).style.display="none"; }
 
-// ================= CONTROL CENTER & NOTIFICATION =================
+// ================= CONTROL CENTER & NOTIFICATIONS =================
 let ccOpen=false, notifOpen=false;
 document.getElementById("status-bar").addEventListener("click",()=>{
     if(ccOpen){ 
-        document.getElementById("control-center").style.transform="translateY(100%)";
-        ccOpen=false;
+        document.getElementById("control-center").style.transform="translateY(100%)"; ccOpen=false;
     }else{
-        document.getElementById("control-center").style.transform="translateY(0)";
-        ccOpen=true;
+        document.getElementById("control-center").style.transform="translateY(0)"; ccOpen=true;
     }
 });
 document.getElementById("status-bar").addEventListener("contextmenu",(e)=>{
     e.preventDefault();
-    notifOpen = !notifOpen;
-    document.getElementById("notification-shade").style.transform = notifOpen ? "translateY(0)" : "translateY(-100%)";
+    notifOpen=!notifOpen;
+    document.getElementById("notification-shade").style.transform = notifOpen?"translateY(0)":"translateY(-100%)";
 });
 </script>
 
 </body>
-                          </html>
+</html>
