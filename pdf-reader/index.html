@@ -3,12 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
 <title>PDF Reader • codingtrolling</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- PDF.js (Mozilla official) -->
+<!-- PDF.js (worker disabled for GitHub/mobile safety) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+<script>
+pdfjsLib.disableWorker = true;
+</script>
 
 <style>
 body { background-color:#0b0f1a; color:#e2e8f0; }
@@ -31,7 +35,12 @@ body { background-color:#0b0f1a; color:#e2e8f0; }
 
 canvas{
     border-radius:1rem;
-    margin:auto;
+    box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+.profile-img{
+    width:42px;height:42px;border-radius:50%;
+    border:2px solid #3b82f6;object-fit:cover;cursor:pointer;
 }
 </style>
 </head>
@@ -76,19 +85,18 @@ canvas{
 
     <div class="reader-box p-8 space-y-6">
 
-        <!-- Drop zone -->
-    <label for="fileInput"
-       id="drop"
-       class="drop-zone p-14 text-center rounded-xl cursor-pointer block">
+        <!-- CLICK SAFE (label instead of JS click) -->
+        <label for="fileInput"
+               class="drop-zone p-14 text-center rounded-xl cursor-pointer block">
 
-    <p class="text-slate-400">
-        Drag & Drop PDF here<br>
-        or click to select
-    </p>
+            <p class="text-slate-400">
+                Drag & Drop PDF here<br>
+                or click to select
+            </p>
+        </label>
 
-</label>
+        <input id="fileInput" type="file" accept="application/pdf" class="hidden">
 
-<input type="file" id="fileInput" class="hidden" accept="application/pdf">
 
         <!-- Controls -->
         <div id="controls" class="hidden flex flex-wrap justify-center gap-3">
@@ -102,10 +110,12 @@ canvas{
             <button onclick="nextPage()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">Next ▶</button>
 
             <button onclick="zoomOut()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">− Zoom</button>
+
             <button onclick="zoomIn()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">+ Zoom</button>
 
             <button onclick="clearPDF()" class="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-500">Clear</button>
         </div>
+
 
         <!-- Canvas -->
         <div class="flex justify-center overflow-auto">
@@ -138,49 +148,41 @@ canvas{
 <!-- ================= SCRIPT ================= -->
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js";
-
 let pdfDoc = null;
 let pageNum = 1;
 let scale = 1.2;
 
+const input = document.getElementById("fileInput");
 const canvas = document.getElementById("pdfCanvas");
 const ctx = canvas.getContext("2d");
-
-const drop = document.getElementById("drop");
-const input = document.getElementById("fileInput");
 const controls = document.getElementById("controls");
-
-drop.onclick = () => input.click();
-
-drop.ondragover = e => e.preventDefault();
-
-drop.ondrop = e => {
-    e.preventDefault();
-    loadPDF(e.dataTransfer.files[0]);
-};
 
 input.onchange = () => loadPDF(input.files[0]);
 
 async function loadPDF(file){
     if(!file) return;
 
-    const arrayBuffer = await file.arrayBuffer();
+    try{
+        const buffer = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({data:buffer}).promise;
 
-    pdfDoc = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+        pageNum = 1;
 
-    pageNum = 1;
+        document.getElementById("pageCount").textContent = pdfDoc.numPages;
 
-    document.getElementById("pageCount").textContent = pdfDoc.numPages;
+        controls.classList.remove("hidden");
 
-    controls.classList.remove("hidden");
+        renderPage();
 
-    renderPage();
+    }catch(err){
+        alert("Failed to open PDF file");
+        console.error(err);
+    }
 }
 
 async function renderPage(){
     const page = await pdfDoc.getPage(pageNum);
+
     const viewport = page.getViewport({scale});
 
     canvas.width = viewport.width;
@@ -225,4 +227,4 @@ function clearPDF(){
 </script>
 
 </body>
-  </html>
+</html>
