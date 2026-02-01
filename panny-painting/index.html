@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodingTrolling // Panny Painting</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body,html{margin:0;padding:0;height:100%;font-family:sans-serif;background:#0b0f1a;color:#e2e8f0;display:flex;flex-direction:column;}
+header{padding:16px;text-align:center;}
+header h1{font-size:2rem;font-weight:900;}
+header p{color:#94a3b8;}
+#toolbar{display:flex;gap:12px;padding:12px;background:#161e2d;border-bottom:1px solid #1e293b;align-items:center;}
+#toolbar label{font-size:0.875rem;color:#e2e8f0;}
+#toolbar input, #toolbar select, #toolbar button{background:#0f172a;color:white;border:none;padding:6px 12px;border-radius:0.75rem;outline:none;cursor:pointer;transition:0.2s;}
+#toolbar input[type=color]{padding:0;width:40px;height:40px;}
+#toolbar input:hover, #toolbar select:hover, #toolbar button:hover{background:#2563eb;}
+#canvas-container{flex-grow:1;display:flex;justify-content:center;align-items:center;padding:12px;}
+canvas{background:#0f172a;border:1px solid #1e293b;border-radius:1rem;touch-action:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Panny Painting</h1>
+  <p>Draw, change colors, clear, or download your masterpiece</p>
+</header>
+
+<div id="toolbar">
+  <label>Color: <input type="color" id="color-picker" value="#00ffff"></label>
+  <label>Brush Size: 
+    <select id="brush-size">
+      <option value="2">2px</option>
+      <option value="4">4px</option>
+      <option value="6" selected>6px</option>
+      <option value="10">10px</option>
+      <option value="16">16px</option>
+    </select>
+  </label>
+  <button id="clear-btn">Clear</button>
+  <button id="download-btn">Download PNG</button>
+</div>
+
+<div id="canvas-container">
+  <canvas id="paint-canvas" width="800" height="500"></canvas>
+</div>
+
+<script>
+// CANVAS SETUP
+const canvas=document.getElementById("paint-canvas");
+const ctx=canvas.getContext("2d");
+ctx.lineCap="round";
+ctx.lineJoin="round";
+
+// TOOLS
+let painting=false;
+let brushColor=document.getElementById("color-picker").value;
+let brushSize=document.getElementById("brush-size").value;
+
+canvas.addEventListener("mousedown",(e)=>{painting=true;draw(e);});
+canvas.addEventListener("mouseup",()=>{painting=false;ctx.beginPath();saveCanvas();});
+canvas.addEventListener("mouseleave",()=>{painting=false;ctx.beginPath();saveCanvas();});
+canvas.addEventListener("mousemove",draw);
+canvas.addEventListener("touchstart",(e)=>{painting=true;drawTouch(e);});
+canvas.addEventListener("touchend",()=>{painting=false;ctx.beginPath();saveCanvas();});
+canvas.addEventListener("touchcancel",()=>{painting=false;ctx.beginPath();saveCanvas();});
+canvas.addEventListener("touchmove",drawTouch);
+
+function draw(e){
+  if(!painting) return;
+  ctx.strokeStyle=brushColor;
+  ctx.lineWidth=brushSize;
+  ctx.lineTo(e.offsetX,e.offsetY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX,e.offsetY);
+}
+
+function drawTouch(e){
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  if(!painting) return;
+  const touch=e.touches[0];
+  const x=touch.clientX-rect.left;
+  const y=touch.clientY-rect.top;
+  ctx.strokeStyle=brushColor;
+  ctx.lineWidth=brushSize;
+  ctx.lineTo(x,y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+}
+
+// COLOR & SIZE
+document.getElementById("color-picker").addEventListener("change",(e)=>{brushColor=e.target.value;});
+document.getElementById("brush-size").addEventListener("change",(e)=>{brushSize=e.target.value;});
+
+// CLEAR
+document.getElementById("clear-btn").addEventListener("click",()=>{
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  saveCanvas();
+});
+
+// DOWNLOAD
+document.getElementById("download-btn").addEventListener("click",()=>{
+  const link=document.createElement("a");
+  link.download="panny_painting.png";
+  link.href=canvas.toDataURL();
+  link.click();
+});
+
+// SAVE & LOAD
+function saveCanvas(){
+  localStorage.setItem("panny-painting",canvas.toDataURL());
+}
+
+function loadCanvas(){
+  const data=localStorage.getItem("panny-painting");
+  if(data){
+    const img=new Image();
+    img.onload=()=>{ctx.drawImage(img,0,0);}
+    img.src=data;
+  }
+}
+loadCanvas();
+</script>
+
+</body>
+    </html>
