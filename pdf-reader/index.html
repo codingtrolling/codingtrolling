@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDF Reader • codingtrolling</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- PDF.js (worker disabled for GitHub/mobile safety) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
-<script>
-pdfjsLib.disableWorker = true;
-</script>
+<!-- PDF.js v3.11 stable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
 
 <style>
 body { background-color:#0b0f1a; color:#e2e8f0; }
@@ -66,7 +63,6 @@ canvas{
     </div>
 </nav>
 
-
 <!-- ================= HEADER ================= -->
 
 <header class="py-14 text-center">
@@ -78,17 +74,15 @@ canvas{
     </p>
 </header>
 
-
 <!-- ================= READER ================= -->
 
 <main class="flex-grow max-w-5xl mx-auto px-6 mb-20">
 
     <div class="reader-box p-8 space-y-6">
 
-        <!-- CLICK SAFE (label instead of JS click) -->
+        <!-- Click safe with label -->
         <label for="fileInput"
                class="drop-zone p-14 text-center rounded-xl cursor-pointer block">
-
             <p class="text-slate-400">
                 Drag & Drop PDF here<br>
                 or click to select
@@ -96,7 +90,6 @@ canvas{
         </label>
 
         <input id="fileInput" type="file" accept="application/pdf" class="hidden">
-
 
         <!-- Controls -->
         <div id="controls" class="hidden flex flex-wrap justify-center gap-3">
@@ -110,12 +103,10 @@ canvas{
             <button onclick="nextPage()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">Next ▶</button>
 
             <button onclick="zoomOut()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">− Zoom</button>
-
             <button onclick="zoomIn()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">+ Zoom</button>
 
             <button onclick="clearPDF()" class="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-500">Clear</button>
         </div>
-
 
         <!-- Canvas -->
         <div class="flex justify-center overflow-auto">
@@ -125,7 +116,6 @@ canvas{
     </div>
 
 </main>
-
 
 <!-- ================= FOOTER ================= -->
 
@@ -143,7 +133,6 @@ canvas{
     </p>
 
 </footer>
-
 
 <!-- ================= SCRIPT ================= -->
 
@@ -164,7 +153,7 @@ async function loadPDF(file){
 
     try{
         const buffer = await file.arrayBuffer();
-        pdfDoc = await pdfjsLib.getDocument({data:buffer}).promise;
+        pdfDoc = await pdfjsLib.getDocument(buffer).promise;
 
         pageNum = 1;
 
@@ -175,7 +164,7 @@ async function loadPDF(file){
         renderPage();
 
     }catch(err){
-        alert("Failed to open PDF file");
+        alert("Failed to open PDF file. Make sure it is a valid PDF.");
         console.error(err);
     }
 }
@@ -188,32 +177,31 @@ async function renderPage(){
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    await page.render({
-        canvasContext: ctx,
-        viewport
-    }).promise;
+    await page.render({canvasContext: ctx, viewport}).promise;
 
     document.getElementById("pageNum").textContent = pageNum;
 }
 
 function nextPage(){
-    if(pageNum >= pdfDoc.numPages) return;
+    if(!pdfDoc || pageNum >= pdfDoc.numPages) return;
     pageNum++;
     renderPage();
 }
 
 function prevPage(){
-    if(pageNum <= 1) return;
+    if(!pdfDoc || pageNum <= 1) return;
     pageNum--;
     renderPage();
 }
 
 function zoomIn(){
+    if(!pdfDoc) return;
     scale += 0.2;
     renderPage();
 }
 
 function zoomOut(){
+    if(!pdfDoc) return;
     scale = Math.max(0.6, scale - 0.2);
     renderPage();
 }
