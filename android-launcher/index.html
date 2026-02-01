@@ -6,169 +6,136 @@
 <title>CodingTrolling Android Launcher</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:hidden; background:black; }
+body, html { margin:0; padding:0; height:100%; font-family:sans-serif; background:#0b0f1a; overflow:hidden; color:#e2e8f0; }
+/* BOOT ANIMATION */
+#boot-screen {
+  position:absolute; inset:0; background:#0b0f1a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000; transition:opacity 1s;
+}
+#boot-screen.fade-out { opacity:0; pointer-events:none; }
+#boot-screen h1 span { color:#00ffff; } /* cyan TROLLING */
+#boot-progress { height:6px; background:#2563eb; width:0; transition:width 0.1s; border-radius:3px; }
 
-/* ================= BOOT ANIMATION ================= */
-#boot-screen{
-    position:absolute; inset:0; background:#0b0f1a; display:flex; flex-direction:column; justify-content:center; align-items:center;
-    z-index:1000; transition: opacity 1s ease;
-}
-#boot-screen.fade-out{ opacity:0; pointer-events:none; }
+/* LAUNCHER */
+#launcher { display:none; position:relative; height:100vh; width:100vw; }
 
-#boot-screen h1 span{ color:#00ffff; } /* CODING TROLLING colors */
+/* WALLPAPER */
+#wallpaper { position:absolute; inset:0; background-size:cover; background-position:center; z-index:0; }
 
-/* ================= LAUNCHER ================= */
-#launcher{
-    display:none; flex-direction:column; height:100vh; width:100vw; position:relative;
-}
+/* STATUS BAR */
+#status-bar { height:28px; background:rgba(22,30,45,0.8); color:white; display:flex; justify-content:space-between; align-items:center; padding:0 8px; font-size:12px; z-index:10; position:absolute; top:0; width:100%; cursor:pointer; border-bottom:1px solid #1e293b; }
+#status-bar .left, #status-bar .right { display:flex; gap:6px; align-items:center; }
+#clock { font-weight:bold; }
 
-/* Wallpaper */
-#wallpaper{
-    position:absolute; inset:0; background-size:cover; background-position:center; z-index:0;
-}
+/* NOTIFICATIONS */
+#notification-shade { position:absolute; top:0; left:0; right:0; background:rgba(22,30,45,0.95); color:white; padding:12px; transform:translateY(-100%); transition:transform 0.3s; z-index:50; border-bottom:1px solid #1e293b; }
 
-/* Status Bar */
-#status-bar{
-    height:24px; background:rgba(0,0,0,0.5); color:white; display:flex; align-items:center; justify-content:space-between;
-    padding:0 8px; font-size:12px; position:absolute; top:0; width:100%; z-index:10; cursor:pointer;
-}
-#status-bar .left, #status-bar .right{ display:flex; gap:6px; align-items:center; }
+/* CONTROL CENTER */
+#control-center { position:absolute; bottom:0; left:0; right:0; background:rgba(22,30,45,0.95); padding:12px; transform:translateY(100%); transition:transform 0.3s; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; z-index:50; }
+.control-btn { background:#161e2d; padding:12px; text-align:center; border-radius:1rem; cursor:pointer; font-size:12px; user-select:none; transition:0.2s; }
+.control-btn:hover { background:#2563eb; }
 
-/* Notification Shade */
-#notification-shade{
-    position:absolute; top:0; left:0; right:0; background:rgba(20,25,35,0.95); color:white;
-    padding:12px; transform:translateY(-100%); transition:transform 0.3s; z-index:50;
-}
+/* APPS GRID */
+#apps { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; position:absolute; top:36px; bottom:0; left:0; right:0; padding:20px; z-index:5; }
+.app { background:#161e2d; color:white; text-align:center; padding:12px; border-radius:1.5rem; cursor:pointer; transition:0.3s; border:1px solid #1e293b; }
+.app:hover { background:#2563eb; }
 
-/* Control Center */
-#control-center{
-    position:absolute; bottom:0; left:0; right:0; background:rgba(20,25,35,0.95); color:white;
-    padding:12px; transform:translateY(100%); transition:transform 0.3s; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; z-index:50;
-}
-.control-btn{
-    background:#161e2d; padding:12px; text-align:center; border-radius:1rem; cursor:pointer; font-size:12px; user-select:none;
-}
-.control-btn:hover{ background:#2563eb; }
+/* APP WINDOWS */
+.app-window { position:absolute; inset:20px; background:#161e2d; border-radius:1.5rem; z-index:20; display:none; flex-direction:column; border:1px solid #1e293b; box-shadow:0 15px 30px rgba(0,0,0,0.4); }
+.app-window header { background:#0f172a; padding:10px; font-weight:bold; display:flex; justify-content:space-between; border-radius:1.5rem 1.5rem 0 0; border-bottom:1px solid #1e293b; }
+.app-window .content { flex-grow:1; padding:12px; overflow:auto; color:white; }
+.app-window button.close { background:red; color:white; border:none; padding:4px 8px; border-radius:0.5rem; cursor:pointer; }
 
-/* Apps Grid */
-#apps{
-    display:grid; grid-template-columns:repeat(4,1fr); gap:20px; position:absolute; top:40px; bottom:0; left:0; right:0; padding:20px; z-index:5;
-}
-.app{
-    background:rgba(0,0,0,0.5); color:white; text-align:center; padding:10px; border-radius:1rem; cursor:pointer; transition:0.2s;
-}
-.app:hover{ background:#2563eb; }
-
-/* App Window */
-.app-window{
-    position:absolute; inset:20px; background:#161e2d; border-radius:1.5rem; z-index:20; display:none; flex-direction:column;
-}
-.app-window header{
-    background:#0f172a; padding:10px; font-weight:bold; display:flex; justify-content:space-between; border-radius:1.5rem 1.5rem 0 0;
-}
-.app-window .content{ flex-grow:1; padding:12px; overflow:auto; color:white; }
-.app-window button.close{ background:red; color:white; border:none; padding:4px 8px; border-radius:0.5rem; cursor:pointer; }
-
-/* Clock App */
-#status-bar #clock { font-weight:bold; }
 </style>
 </head>
 <body>
 
-<!-- ================= BOOT ANIMATION ================= -->
+<!-- BOOT SCREEN -->
 <div id="boot-screen">
-    <h1 class="text-4xl font-black mb-4">CODING<span>TROLLING</span></h1>
-    <p>Booting Android...</p>
-    <div class="mt-4 w-48 h-2 bg-slate-800 rounded-full overflow-hidden">
-        <div id="boot-progress" class="h-2 bg-cyan-400 w-0"></div>
-    </div>
+  <h1 class="text-4xl font-black mb-4">CODING<span>TROLLING</span></h1>
+  <p>Booting Android...</p>
+  <div class="mt-4 w-48 bg-slate-800 rounded-full">
+    <div id="boot-progress"></div>
+  </div>
 </div>
 
-<!-- ================= LAUNCHER ================= -->
+<!-- LAUNCHER -->
 <div id="launcher">
+  <div id="wallpaper" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1350&q=80');"></div>
+  
+  <!-- STATUS BAR -->
+  <div id="status-bar">
+    <div class="left"><span id="battery">🔋 100%</span></div>
+    <div class="right"><span id="clock"></span></div>
+  </div>
 
-    <!-- Wallpaper -->
-    <div id="wallpaper" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1350&q=80');"></div>
+  <!-- NOTIFICATION SHADE -->
+  <div id="notification-shade"><p>Notifications (simulated)</p></div>
 
-    <!-- Status Bar -->
-    <div id="status-bar">
-        <div class="left"><span id="battery">🔋 100%</span></div>
-        <div class="right"><span id="clock"></span></div>
+  <!-- CONTROL CENTER -->
+  <div id="control-center">
+    <div class="control-btn">Wi-Fi</div>
+    <div class="control-btn">Airplane</div>
+    <div class="control-btn">Mobile Data</div>
+    <div class="control-btn">Volume</div>
+    <div class="control-btn">Brightness</div>
+  </div>
+
+  <!-- APPS -->
+  <div id="apps">
+    <div class="app" onclick="openApp('youtube')">YouTube</div>
+    <div class="app" onclick="openApp('notes')">Notes</div>
+    <div class="app" onclick="openApp('music')">Music</div>
+    <div class="app" onclick="openApp('clock-app')">Clock</div>
+    <div class="app" onclick="openApp('terminal')">Terminal</div>
+    <div class="app" onclick="openApp('settings')">Settings</div>
+  </div>
+
+  <!-- APP WINDOWS -->
+  <div id="youtube" class="app-window">
+    <header>YouTube <button class="close" onclick="closeApp('youtube')">X</button></header>
+    <div class="content grid grid-cols-2 gap-4">
+      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" class="w-full h-48"></iframe>
+      <iframe src="https://www.youtube.com/embed/3JZ_D3ELwOQ" class="w-full h-48"></iframe>
+      <iframe src="https://www.youtube.com/embed/L_jWHffIx5E" class="w-full h-48"></iframe>
+      <iframe src="https://www.youtube.com/embed/tVj0ZTS4WF4" class="w-full h-48"></iframe>
+      <iframe src="https://www.youtube.com/embed/k85mRPqvMbE" class="w-full h-48"></iframe>
+      <iframe src="https://www.youtube.com/embed/fJ9rUzIMcZQ" class="w-full h-48"></iframe>
     </div>
+  </div>
 
-    <!-- Notification Shade -->
-    <div id="notification-shade">
-        <p>Notifications (simulated)</p>
-    </div>
+  <div id="notes" class="app-window">
+    <header>Notes <button class="close" onclick="closeApp('notes')">X</button></header>
+    <div class="content"><textarea class="w-full h-full bg-slate-900 text-white p-2 rounded-lg"></textarea></div>
+  </div>
 
-    <!-- Control Center -->
-    <div id="control-center">
-        <div class="control-btn">Wi-Fi</div>
-        <div class="control-btn">Airplane</div>
-        <div class="control-btn">Mobile Data</div>
-        <div class="control-btn">Volume</div>
-        <div class="control-btn">Brightness</div>
-    </div>
+  <div id="music" class="app-window">
+    <header>Music <button class="close" onclick="closeApp('music')">X</button></header>
+    <div class="content">Simulated Music Player</div>
+  </div>
 
-    <!-- Apps Grid -->
-    <div id="apps">
-        <div class="app" onclick="openApp('youtube')">YouTube</div>
-        <div class="app" onclick="openApp('notes')">Notes</div>
-        <div class="app" onclick="openApp('music')">Music</div>
-        <div class="app" onclick="openApp('clock-app')">Clock</div>
-        <div class="app" onclick="openApp('terminal')">Terminal</div>
-        <div class="app" onclick="openApp('settings')">Settings</div>
-    </div>
+  <div id="clock-app" class="app-window">
+    <header>Clock <button class="close" onclick="closeApp('clock-app')">X</button></header>
+    <div class="content text-center text-3xl" id="clock-display">00:00:00</div>
+  </div>
 
-    <!-- App Windows -->
-    <div id="youtube" class="app-window flex flex-col">
-        <header>YouTube <button class="close" onclick="closeApp('youtube')">X</button></header>
-        <div class="content grid grid-cols-2 gap-4">
-            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" class="w-full h-48"></iframe>
-            <iframe src="https://www.youtube.com/embed/3JZ_D3ELwOQ" class="w-full h-48"></iframe>
-            <iframe src="https://www.youtube.com/embed/L_jWHffIx5E" class="w-full h-48"></iframe>
-            <iframe src="https://www.youtube.com/embed/tVj0ZTS4WF4" class="w-full h-48"></iframe>
-            <iframe src="https://www.youtube.com/embed/k85mRPqvMbE" class="w-full h-48"></iframe>
-            <iframe src="https://www.youtube.com/embed/fJ9rUzIMcZQ" class="w-full h-48"></iframe>
-        </div>
-    </div>
+  <div id="terminal" class="app-window">
+    <header>Terminal <button class="close" onclick="closeApp('terminal')">X</button></header>
+    <div class="content">Fake terminal.</div>
+  </div>
 
-    <div id="notes" class="app-window flex flex-col">
-        <header>Notes <button class="close" onclick="closeApp('notes')">X</button></header>
-        <div class="content">
-            <textarea class="w-full h-full bg-slate-900 text-white p-2 rounded-lg" placeholder="Write notes..."></textarea>
-        </div>
-    </div>
-
-    <div id="music" class="app-window flex flex-col">
-        <header>Music <button class="close" onclick="closeApp('music')">X</button></header>
-        <div class="content">Simulated music player</div>
-    </div>
-
-    <div id="clock-app" class="app-window flex flex-col">
-        <header>Clock <button class="close" onclick="closeApp('clock-app')">X</button></header>
-        <div class="content text-center text-3xl" id="clock-display">00:00:00</div>
-    </div>
-
-    <div id="terminal" class="app-window flex flex-col">
-        <header>Terminal <button class="close" onclick="closeApp('terminal')">X</button></header>
-        <div class="content">Fake terminal. Commands not real.</div>
-    </div>
-
-    <div id="settings" class="app-window flex flex-col">
-        <header>Settings <button class="close" onclick="closeApp('settings')">X</button></header>
-        <div class="content">Simulated settings page.</div>
-    </div>
+  <div id="settings" class="app-window">
+    <header>Settings <button class="close" onclick="closeApp('settings')">X</button></header>
+    <div class="content">Simulated settings.</div>
+  </div>
 
 </div>
 
 <script>
-// ================= BOOT =================
+// BOOT
 let progress=0;
 const bootProgress=document.getElementById("boot-progress");
 const bootScreen=document.getElementById("boot-screen");
 const launcher=document.getElementById("launcher");
-
 const bootInterval=setInterval(()=>{
     progress+=1;
     bootProgress.style.width=progress+"%";
@@ -179,18 +146,18 @@ const bootInterval=setInterval(()=>{
     }
 },30);
 
-// ================= CLOCK =================
+// CLOCK
 function updateClock(){
     const now=new Date();
     const tStr=now.toLocaleTimeString();
     document.getElementById("clock").textContent=tStr;
-    const clockDisplay=document.getElementById("clock-display");
-    if(clockDisplay) clockDisplay.textContent=tStr;
+    const cd=document.getElementById("clock-display");
+    if(cd) cd.textContent=tStr;
 }
 setInterval(updateClock,1000);
 updateClock();
 
-// ================= BATTERY =================
+// BATTERY SIM
 let batteryLevel=100;
 setInterval(()=>{
     batteryLevel-=Math.random()*0.1;
@@ -198,23 +165,20 @@ setInterval(()=>{
     document.getElementById("battery").textContent=`🔋 ${Math.floor(batteryLevel)}%`;
 },2000);
 
-// ================= APPS =================
+// APPS OPEN/CLOSE
 function openApp(id){ document.getElementById(id).style.display="flex"; }
 function closeApp(id){ document.getElementById(id).style.display="none"; }
 
-// ================= CONTROL CENTER & NOTIFICATIONS =================
+// CONTROL CENTER & NOTIFICATIONS
 let ccOpen=false, notifOpen=false;
 document.getElementById("status-bar").addEventListener("click",()=>{
-    if(ccOpen){ 
-        document.getElementById("control-center").style.transform="translateY(100%)"; ccOpen=false;
-    }else{
-        document.getElementById("control-center").style.transform="translateY(0)"; ccOpen=true;
-    }
+    ccOpen=!ccOpen;
+    document.getElementById("control-center").style.transform = ccOpen ? "translateY(0)" : "translateY(100%)";
 });
 document.getElementById("status-bar").addEventListener("contextmenu",(e)=>{
     e.preventDefault();
     notifOpen=!notifOpen;
-    document.getElementById("notification-shade").style.transform = notifOpen?"translateY(0)":"translateY(-100%)";
+    document.getElementById("notification-shade").style.transform = notifOpen ? "translateY(0)" : "translateY(-100%)";
 });
 </script>
 
