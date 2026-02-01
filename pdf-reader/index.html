@@ -77,14 +77,18 @@ canvas{
     <div class="reader-box p-8 space-y-6">
 
         <!-- Drop zone -->
-        <div id="drop"
-             class="drop-zone p-14 text-center rounded-xl cursor-pointer">
-            <p class="text-slate-400">
-                Drag & Drop PDF here<br>
-                or click to select
-            </p>
-            <input type="file" id="fileInput" class="hidden" accept="application/pdf">
-        </div>
+    <label for="fileInput"
+       id="drop"
+       class="drop-zone p-14 text-center rounded-xl cursor-pointer block">
+
+    <p class="text-slate-400">
+        Drag & Drop PDF here<br>
+        or click to select
+    </p>
+
+</label>
+
+<input type="file" id="fileInput" class="hidden" accept="application/pdf">
 
         <!-- Controls -->
         <div id="controls" class="hidden flex flex-wrap justify-center gap-3">
