@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subscribe // codingtrolling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b0f1a] text-white flex items-center justify-center min-h-screen p-6">
+
+    <div class="max-w-sm w-full bg-[#161e2d] border border-slate-800 p-8 rounded-3xl text-center shadow-2xl">
+        <div class="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        
+        <h2 class="text-2xl font-black uppercase italic mb-2">Premium <span class="text-blue-500">Access</span></h2>
+        <p class="text-slate-400 text-sm mb-6">Unlock full x86 BIOS features and priority Bozin AI responses.</p>
+        
+        <div class="text-4xl font-black mb-8">$1<span class="text-lg text-slate-500">/mo</span></div>
+
+        <button id="checkout-button" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold transition-all transform hover:scale-105">
+            PAY WITH CREDIT CARD
+        </button>
+
+        <p class="text-[10px] text-slate-600 mt-6 uppercase font-bold tracking-widest">Secure Encrypted Payment via Stripe</p>
+        <a href="/" class="block mt-4 text-xs text-slate-500 hover:text-white">Cancel</a>
+    </div>
+
+    <script>
+        document.getElementById('checkout-button').addEventListener('click', () => {
+            // To make this real, you would use:
+            // window.location.href = 'YOUR_STRIPE_PAYMENT_LINK';
+            alert("Redirecting to secure payment gateway...");
+        });
+    </script>
+</body>
+</html>
