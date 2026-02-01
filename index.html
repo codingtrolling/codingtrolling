@@ -1,250 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CodingTrolling • Utility Hub</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>codingtrolling // Utility Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        .card { 
+            background: #161e2d; 
+            border: 1px solid #1e293b; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 2rem;
+            border-radius: 1.5rem;
+        }
+        .card:hover { 
+            border-color: #3b82f6; 
+            transform: translateY(-8px); 
+            box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.4); 
+        }
+        .btn-action { 
+            background: #2563eb; 
+            color: white;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            margin-top: auto;
+            transition: background 0.2s;
+        }
+        .btn-action:hover { background: #1d4ed8; }
+        .profile-img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; cursor: pointer; }
 
-<style>
-:root{
-  --bg:#0a0f14;
-  --card:#111821;
-  --cyan:#00ffff;
-  --text:#e8f1ff;
-  --muted:#8aa0b5;
-}
-
-*{box-sizing:border-box;margin:0;padding:0;font-family:Consolas,monospace}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-}
-
-/* HEADER */
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:20px 40px;
-  border-bottom:1px solid #182330;
-}
-
-.logo span:first-child{color:white}
-.logo span:last-child{
-  color:var(--cyan);
-  text-shadow:0 0 10px var(--cyan);
-  font-weight:bold;
-}
-
-.login-btn{
-  background:none;
-  border:1px solid var(--cyan);
-  color:var(--cyan);
-  padding:8px 16px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:20px;
-  padding:30px;
-}
-
-.card{
-  background:var(--card);
-  padding:18px;
-  border-radius:10px;
-  border:1px solid #1c2733;
-  transition:.25s;
-}
-
-.card:hover{
-  box-shadow:0 0 14px var(--cyan);
-}
-
-.card h3{
-  color:var(--cyan);
-  margin-bottom:8px;
-}
-
-.card button{
-  margin-top:12px;
-  width:100%;
-  padding:8px;
-  background:var(--cyan);
-  border:none;
-  color:black;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* PAGES */
-.page{
-  display:none;
-  padding:40px;
-}
-
-.page.active{
-  display:block;
-}
-
-.back{
-  margin-bottom:20px;
-  cursor:pointer;
-  color:var(--cyan);
-}
-
-footer{
-  text-align:center;
-  padding:25px;
-  color:var(--muted);
-}
-</style>
+        /* Settings Modal (Overlay) */
+        #settings-modal {
+            display: none; position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center;
+        }
+    </style>
 </head>
+<body class="font-sans min-h-screen flex flex-col">
 
-<body>
-
-<header>
-  <h2 class="logo">
-    <span>CODING</span><span>TROLLING</span>
-  </h2>
-  <button class="login-btn">Login</button>
-</header>
-
-<!-- =========================
-HOME PAGE
-========================= -->
-<div id="home" class="page active">
-
-  <section class="grid">
-
-    <div class="card">
-      <h3>Subway Runner</h3>
-      <p>Harder minimal Subway game.</p>
-      <button onclick="go('/subway-runner')">Play Now</button>
+    <div id="settings-modal" onclick="if(event.target === this) closeSettings()">
+        <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl w-full max-w-md shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 flex justify-between">Settings <button onclick="closeSettings()" class="text-slate-500">&times;</button></h2>
+            
+            <label class="text-xs font-bold text-blue-500 uppercase mb-2 block">Username</label>
+            <input type="text" id="username-input" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-4 outline-none focus:border-blue-500" placeholder="Username">
+            
+            <label class="text-xs font-bold text-blue-500 uppercase mb-2 block">Custom Skin URL</label>
+            <input type="text" id="skin-input" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-6 outline-none focus:border-blue-500" placeholder="https://...">
+            
+            <button onclick="saveProfile()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold transition">Save & Apply</button>
+        </div>
     </div>
 
-    <div class="card">
-      <h3>Media Player</h3>
-      <button onclick="go('/media-player')">Use Player</button>
+    <nav class="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter uppercase">
+                coding<span class="text-blue-500">trolling</span>
+            </h1>
+            <div class="flex items-center space-x-6">
+                <div id="auth-zone">
+                    <a href="/login" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-bold text-sm transition">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="py-16 px-6 text-center">
+        <h2 class="text-5xl md:text-6xl font-black mb-4 tracking-tight">The <span class="text-blue-500">Utility</span> Hub</h2>
+        <p class="text-slate-400 max-w-2xl mx-auto">7 High-performance tools connected via Google Cloud.</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+        <div class="card">
+            <div class="text-blue-500 text-3xl font-black mb-2">01.</div>
+            <h3 class="text-xl font-bold mb-2">Subway Runner</h3>
+            <p class="text-slate-400 text-sm mb-6">Play instantly in your browser. Pure high-score chasing.</p>
+            <a href="/subway-runner" class="btn-action">Play Now</a>
+        </div>
+        <div class="card">
+            <div class="text-blue-500 text-3xl font-black mb-2">02.</div>
+            <h3 class="text-xl font-bold mb-2">Music Player</h3>
+            <p class="text-slate-400 text-sm mb-6">Lightweight local player. Drag files in and listen.</p>
+            <a href="/music-player" class="btn-action">Open Player</a>
+        </div>
+        <div class="card">
+            <div class="text-blue-500 text-3xl font-black mb-2">03.</div>
+            <h3 class="text-xl font-bold mb-2">PDF Reader</h3>
+            <p class="text-slate-400 text-sm mb-6">Private, fast, and works offline. Secure document viewing.</p>
+            <a href="/pdf-reader" class="btn-action">Use Reader</a>
+        </div>
+        <div class="card">
+            <div class="text-blue-500 text-3xl font-black mb-2">04.</div>
+            <h3 class="text-xl font-bold mb-2">Bozin AI</h3>
+            <p class="text-slate-400 text-sm mb-6">AI assistant for math, code, and casual chat.</p>
+            <a href="/bozin-ai" class="btn-action">Use AI</a>
+        </div>
+        <div class="card">
+            <div class="text-blue-500 text-3xl font-black mb-2">05.</div>
+            <h3 class="text-xl font-bold mb-2">Android Launcher</h3>
+            <p class="text-slate-400 text-sm mb-6">Simulator mimicking Android OS with persistent apps.</p>
+            <a href="/android-launcher" class="btn-action">Use Launcher</a>
+        </div>
+        <div class="card">
+            <div class="text-blue-500 text-3xl font-black mb-2">06.</div>
+            <h3 class="text-xl font-bold mb-2">Panny Painting</h3>
+            <p class="text-slate-400 text-sm mb-6">Touch canvas. Paint, erase, and save masterpieces.</p>
+            <a href="/panny-painting" class="btn-action">Use Panny</a>
+        </div>
+        <div class="card">
+            <div class="text-blue-500 text-3xl font-black mb-2">07.</div>
+            <h3 class="text-xl font-bold mb-2">SusCraft</h3>
+            <p class="text-slate-400 text-sm mb-6">Mine and build using your Google profile as a skin.</p>
+            <a href="/suscraft" class="btn-action">Play SusCraft</a>
+        </div>
+    </main>
+
+    <footer class="mt-auto border-t border-slate-800 p-10 bg-slate-900/50 text-center space-y-4">
+
+    <p class="text-slate-500 font-bold">
+        &copy; 2026 codingtrolling company
+    </p>
+
+    <div class="space-x-6 text-sm">
+        <a href="/terms" class="text-blue-500 hover:text-blue-400 font-semibold">
+            Terms of Service
+        </a>
+
+        <a href="/privacy" class="text-blue-500 hover:text-blue-400 font-semibold">
+            Privacy Policy
+        </a>
     </div>
 
-    <div class="card">
-      <h3>PDF Reader</h3>
-      <button onclick="go('/pdf-reader')">Open Reader</button>
-    </div>
+    <p class="text-slate-400 font-mono text-xs">
+        contact.codingtrolling@gmail.com
+    </p>
 
-    <div class="card">
-      <h3>Bozin AI</h3>
-      <button onclick="go('/bozin-ai')">Use AI</button>
-    </div>
-
-    <div class="card">
-      <h3>Android Launcher</h3>
-      <button onclick="go('/launcher')">Use Launcher</button>
-    </div>
-
-    <div class="card">
-      <h3>Panny Painting</h3>
-      <button onclick="go('/panny-paint')">Use Panny</button>
-    </div>
-
-    <div class="card">
-      <h3>SusCraft</h3>
-      <button onclick="go('/suscraft')">Play SusCraft</button>
-    </div>
-
-    <div class="card">
-      <h3>Windows 1 Emulator</h3>
-      <button onclick="go('/win1-emulator')">Use Emulator</button>
-    </div>
-
-  </section>
-</div>
-
-
-<!-- =========================
-TOOL PAGES
-Replace content with your apps later
-========================= -->
-
-<div id="subway-runner" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>Subway Runner</h1>
-  <p>Your game loads here.</p>
-</div>
-
-<div id="media-player" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>Media Player</h1>
-</div>
-
-<div id="pdf-reader" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>PDF Reader</h1>
-</div>
-
-<div id="bozin-ai" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>Bozin AI</h1>
-</div>
-
-<div id="launcher" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>Android Launcher</h1>
-</div>
-
-<div id="panny-paint" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>Panny Painting</h1>
-</div>
-
-<div id="suscraft" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>SusCraft</h1>
-</div>
-
-<div id="win1-emulator" class="page">
-  <div class="back" onclick="go('/')">← Back</div>
-  <h1>Windows 1 Emulator</h1>
-</div>
-
-<footer>
-© 2026 CodingTrolling Limited<br>
-contact.codingtrolling@gmail.com<br>
-Github : @codingtrolling
 </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem('google_token');
+            // Populate settings inputs if data exists
+            document.getElementById('username-input').value = localStorage.getItem('suscraft_username') || '';
+            document.getElementById('skin-input').value = localStorage.getItem('suscraft_skin') || '';
 
-<script>
-/* =========================
-SPA ROUTER (clean URLs)
-========================= */
+            // Handle URL Hash for settings
+            if(window.location.hash === '#settings') toggleModal(true);
+            window.addEventListener('hashchange', () => toggleModal(window.location.hash === '#settings'));
 
-function go(path){
-  history.pushState({}, "", path);
-  show(path);
-}
+            if (!token) return;
 
-function show(path){
-  document.querySelectorAll(".page")
-    .forEach(p => p.classList.remove("active"));
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                if(!localStorage.getItem('suscraft_skin')) localStorage.setItem('suscraft_skin', payload.picture);
 
-  let id = path === "/" ? "home" : path.replace("/", "");
-  let page = document.getElementById(id);
+                document.getElementById('auth-zone').innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-red-500 font-black uppercase">Logout</button>
+                        <div class="relative group">
+                            <img src="${payload.picture}" onclick="openSettings()" class="profile-img" alt="User">
+                            <div class="absolute top-12 right-0 bg-slate-800 p-2 rounded text-[10px] opacity-0 group-hover:opacity-100 transition shadow-xl whitespace-nowrap z-50">
+                                Click image for settings
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                localStorage.removeItem('google_token');
+            }
+        });
 
-  if(page) page.classList.add("active");
-  else document.getElementById("home").classList.add("active");
-}
+        function openSettings() { window.location.hash = 'settings'; }
+        function closeSettings() { window.location.hash = ''; }
+        function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
 
-window.onpopstate = () => show(location.pathname);
+        function saveProfile() {
+            localStorage.setItem('suscraft_username', document.getElementById('username-input').value);
+            localStorage.setItem('suscraft_skin', document.getElementById('skin-input').value);
+            closeSettings();
+        }
 
-show(location.pathname);
-</script>
-
+        function logout() {
+            localStorage.clear();
+            window.location.reload();
+        }
+    </script>
 </body>
-   </html>
+</html>
