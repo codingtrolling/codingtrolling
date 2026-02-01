@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>codingtrolling // SusCraft</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/examples/js/controls/PointerLockControls.js"></script>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#0b0f1a;
+    font-family:sans-serif;
+    color:#e2e8f0;
+}
+
+/* ===== UI ===== */
+
+.panel{
+    background:#161e2d;
+    border:1px solid #1e293b;
+    border-radius:1.5rem;
+    padding:2rem;
+}
+
+.btn{
+    background:#2563eb;
+    padding:10px 16px;
+    border-radius:0.75rem;
+    font-weight:700;
+}
+
+#menu{
+    position:fixed;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:rgba(0,0,0,0.85);
+    backdrop-filter:blur(8px);
+    z-index:10;
+}
+
+#crosshair{
+    position:fixed;
+    top:50%;left:50%;
+    width:8px;height:8px;
+    border:2px solid #3b82f6;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    pointer-events:none;
+    display:none;
+}
+
+/* inventory */
+#inventory{
+    position:fixed;
+    bottom:12px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:6px;
+    z-index:5;
+    display:none;
+}
+
+.slot{
+    width:42px;
+    height:42px;
+    background:#161e2d;
+    border:2px solid #1e293b;
+    border-radius:10px;
+    cursor:pointer;
+}
+.slot.active{
+    border-color:#3b82f6;
+}
+
+/* mobile */
+#mobileControls{
+    position:fixed;
+    bottom:90px;
+    left:15px;
+    display:none;
+    gap:10px;
+}
+.mbtn{
+    width:55px;
+    height:55px;
+    background:#161e2daa;
+    border-radius:50%;
+}
+</style>
+</head>
+
+<body>
+
+<!-- MENU -->
+<div id="menu">
+  <div class="panel w-[330px] text-center">
+    <h1 class="text-3xl font-black mb-4">
+      Sus<span class="text-blue-500">Craft</span>
+    </h1>
+    <button id="startBtn" class="btn w-full">Play</button>
+  </div>
+</div>
+
+<div id="crosshair"></div>
+
+<div id="inventory"></div>
+
+<div id="mobileControls">
+  <div class="mbtn" id="up"></div>
+  <div class="mbtn" id="down"></div>
+</div>
+
+<script>
+/* =========================
+   THREE SETUP
+========================= */
+const scene=new THREE.Scene();
+
+const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
+
+window.addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+
+/* =========================
+   LIGHT + DAY NIGHT
+========================= */
+const sun=new THREE.DirectionalLight(0xffffff,1);
+sun.position.set(30,50,30);
+scene.add(sun);
+
+let time=0;
+
+function updateDayNight(){
+ time+=0.001;
+ const c=(Math.sin(time)+1)/2;
+ sun.intensity=0.3+1.2*c;
+ scene.background=new THREE.Color().setHSL(0.6,0.6,0.1+0.4*c);
+}
+
+/* =========================
+   CONTROLS
+========================= */
+const controls=new THREE.PointerLockControls(camera,document.body);
+scene.add(controls.getObject());
+
+/* =========================
+   BLOCK SYSTEM
+========================= */
+
+const blocks=new Map();
+const geo=new THREE.BoxGeometry(1,1,1);
+
+const blockTypes=[
+ {color:0x1e293b},
+ {color:0x3b82f6},
+ {color:0x10b981},
+ {color:0xf59e0b}
+];
+
+let selected=0;
+
+/* inventory UI */
+const inv=document.getElementById("inventory");
+blockTypes.forEach((b,i)=>{
+ const s=document.createElement("div");
+ s.className="slot";
+ s.style.background=`#${b.color.toString(16)}`;
+ if(i===0)s.classList.add("active");
+ s.onclick=()=>{
+   selected=i;
+   document.querySelectorAll(".slot").forEach(e=>e.classList.remove("active"));
+   s.classList.add("active");
+ };
+ inv.appendChild(s);
+});
+
+function key(x,y,z){ return `${x},${y},${z}` }
+
+function addBlock(x,y,z,t=selected){
+ const k=key(x,y,z);
+ if(blocks.has(k)) return;
+
+ const m=new THREE.MeshStandardMaterial({color:blockTypes[t].color});
+ const mesh=new THREE.Mesh(geo,m);
+ mesh.position.set(x,y,z);
+ scene.add(mesh);
+ blocks.set(k,{mesh,t});
+}
+
+function removeBlock(x,y,z){
+ const k=key(x,y,z);
+ const b=blocks.get(k);
+ if(!b) return;
+ scene.remove(b.mesh);
+ blocks.delete(k);
+}
+
+/* =========================
+   CHUNK GENERATION
+========================= */
+
+const chunkSize=16;
+const viewDist=3;
+
+function generateChunk(cx,cz){
+ for(let x=0;x<chunkSize;x++){
+  for(let z=0;z<chunkSize;z++){
+   const wx=cx*chunkSize+x;
+   const wz=cz*chunkSize+z;
+
+   const h=Math.floor(Math.sin(wx*0.15)+Math.cos(wz*0.15)*2);
+
+   for(let y=-2;y<=h;y++){
+     addBlock(wx,y,wz,0);
+   }
+  }
+ }
+}
+
+function updateChunks(){
+ const px=Math.floor(camera.position.x/chunkSize);
+ const pz=Math.floor(camera.position.z/chunkSize);
+
+ for(let x=-viewDist;x<=viewDist;x++){
+  for(let z=-viewDist;z<=viewDist;z++){
+   generateChunk(px+x,pz+z);
+  }
+ }
+}
+
+/* =========================
+   SAVE WORLD
+========================= */
+
+function saveWorld(){
+ const data=[...blocks.entries()].map(([k,v])=>[k,v.t]);
+ localStorage.setItem("suscraft_world",JSON.stringify(data));
+}
+
+function loadWorld(){
+ const d=localStorage.getItem("suscraft_world");
+ if(!d) return;
+ JSON.parse(d).forEach(([k,t])=>{
+  const [x,y,z]=k.split(",").map(Number);
+  addBlock(x,y,z,t);
+ });
+}
+
+/* =========================
+   PLACE/BREAK
+========================= */
+
+const ray=new THREE.Raycaster();
+
+function target(){
+ ray.setFromCamera(new THREE.Vector2(0,0),camera);
+ return ray.intersectObjects([...blocks.values()].map(b=>b.mesh))[0];
+}
+
+document.addEventListener("mousedown",e=>{
+ const hit=target();
+ if(!hit) return;
+
+ const p=hit.object.position;
+
+ if(e.button===0){
+  const n=hit.face.normal;
+  addBlock(p.x+n.x,p.y+n.y,p.z+n.z);
+ }
+ if(e.button===2){
+  removeBlock(p.x,p.y,p.z);
+ }
+ saveWorld();
+});
+document.addEventListener("contextmenu",e=>e.preventDefault());
+
+/* =========================
+   MOVEMENT + FLY
+========================= */
+
+const keys={};
+document.addEventListener("keydown",e=>keys[e.code]=true);
+document.addEventListener("keyup",e=>keys[e.code]=false);
+
+function move(){
+ const s=0.15;
+ if(keys["KeyW"]) controls.moveForward(s);
+ if(keys["KeyS"]) controls.moveForward(-s);
+ if(keys["KeyA"]) controls.moveRight(-s);
+ if(keys["KeyD"]) controls.moveRight(s);
+ if(keys["Space"]) camera.position.y+=s;
+ if(keys["ShiftLeft"]) camera.position.y-=s;
+}
+
+/* =========================
+   MOBS (simple cubes)
+========================= */
+
+const mobs=[];
+function spawnMob(){
+ const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0xef4444}));
+ m.position.set(
+  camera.position.x+Math.random()*10-5,
+  1,
+  camera.position.z+Math.random()*10-5
+ );
+ scene.add(m);
+ mobs.push(m);
+}
+setInterval(spawnMob,6000);
+
+function updateMobs(){
+ mobs.forEach(m=>{
+   m.position.x+=Math.sin(time+m.id)*0.02;
+   m.position.z+=Math.cos(time+m.id)*0.02;
+ });
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+if("ontouchstart" in window){
+ document.getElementById("mobileControls").style.display="flex";
+}
+
+/* =========================
+   START
+========================= */
+
+document.getElementById("startBtn").onclick=()=>{
+ document.getElementById("menu").style.display="none";
+ document.getElementById("crosshair").style.display="block";
+ document.getElementById("inventory").style.display="flex";
+
+ controls.lock();
+ loadWorld();
+};
+
+/* =========================
+   LOOP
+========================= */
+
+function animate(){
+ requestAnimationFrame(animate);
+
+ updateDayNight();
+ move();
+ updateChunks();
+ updateMobs();
+
+ renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+  </html>
