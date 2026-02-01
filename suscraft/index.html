@@ -1,70 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>SusCraft - Multi-Tool Edition</title>
+    <meta charset="UTF-8">
+    <title>SusCraft - Multiplayer Prototype</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        #gui { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; }
-        #inventory { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.7); padding: 10px; border: 2px solid #555; }
-        .slot { width: 50px; height: 50px; border: 1px solid #fff; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; }
-        #chat { position: absolute; bottom: 100px; left: 10px; width: 300px; height: 150px; background: rgba(0,0,0,0.3); color: #0f0; overflow-y: auto; padding: 5px; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', Courier, monospace; }
+        
+        /* Start Menu */
+        #menu {
+            position: absolute; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8) url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; color: #0f0; text-shadow: 2px 2px #000;
+        }
+        #menu h1 { font-size: 5rem; margin-bottom: 20px; }
+        .btn { 
+            padding: 15px 40px; font-size: 1.5rem; background: #222; color: #0f0; 
+            border: 2px solid #0f0; cursor: pointer; transition: 0.3s;
+        }
+        .btn:hover { background: #0f0; color: #000; }
+
+        /* UI Elements */
+        #hud { position: absolute; top: 10px; left: 10px; color: white; display: none; }
+        #inventory { 
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: none; gap: 10px; background: rgba(0,0,0,0.7); padding: 10px; border: 2px solid #555;
+        }
+        .slot { width: 40px; height: 40px; border: 1px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 8px; }
+        #chat-box { 
+            position: absolute; bottom: 100px; left: 10px; width: 250px; height: 120px; 
+            background: rgba(0,0,0,0.3); color: #0f0; overflow-y: hidden; display: none;
+        }
     </style>
 </head>
 <body>
-    <div id="gui">Mode: FLYING (Space to rise, Shift to sink)<br>WASD to Move</div>
-    <div id="chat">Chat: Connected to Local Session...</div>
+
+    <div id="menu">
+        <h1>SUSCRAFT</h1>
+        <button class="btn" onclick="startGame()">START MULTIPLAYER</button>
+        <p style="margin-top:20px;">W,A,S,D: Move | SPACE: Fly | SHIFT: Sink</p>
+    </div>
+
+    <div id="hud">HP: 100 | Coordinates: <span id="coords">0, 0, 0</span></div>
+    <div id="chat-box" id="chat">Chat: Connecting...</div>
     <div id="inventory">
         <div class="slot" style="background: #5d4037;">DIRT</div>
         <div class="slot" style="background: #757575;">STONE</div>
         <div class="slot" style="background: #2e7d32;">GRASS</div>
+        <div class="slot" style="background: #ffeb3b; color:black;">GOLD</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Setup Scene
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // Ground
-        const geometry = new THREE.BoxGeometry(100, 1, 100);
-        const material = new THREE.MeshBasicMaterial({ color: 0x228b22 });
-        const ground = new THREE.Mesh(geometry, material);
-        scene.add(ground);
-
-        // Flight Controls Logic
+        let scene, camera, renderer, player, clock;
         let keys = {};
-        document.addEventListener('keydown', (e) => keys[e.code] = true);
-        document.addEventListener('keyup', (e) => keys[e.code] = false);
 
-        camera.position.set(0, 5, 10);
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb);
+            clock = new THREE.Clock();
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Light
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 10, 7.5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
+
+            // Ground (Voxel-ish Floor)
+            const gridHelper = new THREE.GridHelper(100, 100, 0x000000, 0x555555);
+            scene.add(gridHelper);
+            
+            // Create Player Model (The "Sus" Character)
+            const bodyGeo = new THREE.BoxGeometry(1, 1.5, 0.5);
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+            player = new THREE.Mesh(bodyGeo, bodyMat);
+            player.position.y = 0.75;
+            
+            // Visor (Make it look like a character)
+            const visorGeo = new THREE.BoxGeometry(0.7, 0.3, 0.2);
+            const visorMat = new THREE.MeshLambertMaterial({ color: 0x88ccff });
+            const visor = new THREE.Mesh(visorGeo, visorMat);
+            visor.position.set(0, 0.4, 0.3);
+            player.add(visor);
+            
+            scene.add(player);
+
+            document.addEventListener('keydown', (e) => keys[e.code] = true);
+            document.addEventListener('keyup', (e) => keys[e.code] = false);
+        }
+
+        function startGame() {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('inventory').style.display = 'flex';
+            document.getElementById('chat-box').style.display = 'block';
+            init();
+            animate();
+        }
 
         function animate() {
             requestAnimationFrame(animate);
+            let delta = clock.getDelta();
+            let moveSpeed = 5 * delta;
+
+            // Movement Logic
+            if (keys['KeyW']) player.position.z -= moveSpeed;
+            if (keys['KeyS']) player.position.z += moveSpeed;
+            if (keys['KeyA']) player.position.x -= moveSpeed;
+            if (keys['KeyD']) player.position.x += moveSpeed;
             
-            const speed = 0.2;
-            if (keys['KeyW']) camera.position.z -= speed;
-            if (keys['KeyS']) camera.position.z += speed;
-            if (keys['KeyA']) camera.position.x -= speed;
-            if (keys['KeyD']) camera.position.x += speed;
-            if (keys['Space']) camera.position.y += speed; // Fly Up
-            if (keys['ShiftLeft']) camera.position.y -= speed; // Fly Down
+            // Flying Logic
+            if (keys['Space']) player.position.y += moveSpeed;
+            if (keys['ShiftLeft']) player.position.y -= moveSpeed;
+
+            // Camera Follows Player (Third Person)
+            camera.position.set(player.position.x, player.position.y + 3, player.position.z + 7);
+            camera.lookAt(player.position);
+
+            // Update UI
+            document.getElementById('coords').innerText = 
+                `${Math.floor(player.position.x)}, ${Math.floor(player.position.y)}, ${Math.floor(player.position.z)}`;
 
             renderer.render(scene, camera);
         }
-        animate();
-
-        // Chat Simulation
-        setInterval(() => {
-            const chat = document.getElementById('chat');
-            const msg = document.createElement('div');
-            msg.innerText = "System: Multiplayer server searching...";
-            chat.appendChild(msg);
-            chat.scrollTop = chat.scrollHeight;
-        }, 5000);
     </script>
 </body>
 </html>
