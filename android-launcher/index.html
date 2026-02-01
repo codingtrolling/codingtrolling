@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodingTrolling Android Launcher</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body, html { margin:0; padding:0; height:100%; font-family:sans-serif; overflow:hidden; background:black; }
+
+/* ================= BOOT ANIMATION ================= */
+#boot-screen{
+    position:absolute; inset:0; background:#0b0f1a; color:#2563eb;
+    display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:sans-serif;
+    z-index:1000; transition: opacity 1s ease;
+}
+#boot-screen.fade-out{ opacity:0; pointer-events:none; }
+
+/* ================= LAUNCHER ================= */
+#launcher{
+    display:none; flex-direction:column; height:100vh; width:100vw; position:relative;
+}
+
+/* Wallpaper */
+#wallpaper{
+    position:absolute; inset:0; background-size:cover; background-position:center; z-index:0;
+}
+
+/* Status Bar */
+#status-bar{
+    height:24px; background:rgba(0,0,0,0.5); color:white; display:flex; align-items:center; justify-content:space-between;
+    padding:0 8px; font-size:12px; position:absolute; top:0; width:100%; z-index:10;
+}
+#status-bar .left, #status-bar .right{ display:flex; gap:6px; align-items:center; }
+
+/* Notification Shade */
+#notification-shade{
+    position:absolute; top:0; left:0; right:0; background:rgba(20,25,35,0.95); color:white;
+    padding:12px; transform:translateY(-100%); transition:transform 0.3s; z-index:50;
+}
+
+/* Control Center */
+#control-center{
+    position:absolute; bottom:0; left:0; right:0; background:rgba(20,25,35,0.95); color:white;
+    padding:12px; transform:translateY(100%); transition:transform 0.3s; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; z-index:50;
+}
+.control-btn{
+    background:#161e2d; padding:12px; text-align:center; border-radius:1rem; cursor:pointer; font-size:12px; user-select:none;
+}
+.control-btn:hover{ background:#2563eb; }
+
+/* Apps Grid */
+#apps{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:20px; position:absolute; top:40px; bottom:0; left:0; right:0; padding:20px; z-index:5;
+}
+.app{
+    background:rgba(0,0,0,0.5); color:white; text-align:center; padding:10px; border-radius:1rem; cursor:pointer; transition:0.2s;
+}
+.app:hover{ background:#2563eb; }
+
+/* App Window */
+.app-window{
+    position:absolute; inset:20px; background:#161e2d; border-radius:1.5rem; z-index:20; display:none; flex-direction:column;
+}
+.app-window header{
+    background:#0f172a; padding:10px; font-weight:bold; display:flex; justify-content:space-between; border-radius:1.5rem 1.5rem 0 0;
+}
+.app-window .content{ flex-grow:1; padding:12px; overflow:auto; color:white; }
+.app-window button.close{ background:red; color:white; border:none; padding:4px 8px; border-radius:0.5rem; cursor:pointer; }
+
+/* Clock */
+#status-bar #clock { font-weight:bold; }
+</style>
+</head>
+<body>
+
+<!-- ================= BOOT ANIMATION ================= -->
+<div id="boot-screen">
+    <h1 class="text-4xl font-black mb-4">CODING<span class="text-cyan-400">TROLLING</span></h1>
+    <p>Booting Android...</p>
+    <div class="mt-4 w-48 h-2 bg-slate-800 rounded-full overflow-hidden">
+        <div id="boot-progress" class="h-2 bg-blue-500 w-0"></div>
+    </div>
+</div>
+
+<!-- ================= LAUNCHER ================= -->
+<div id="launcher">
+
+    <!-- Wallpaper -->
+    <div id="wallpaper" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1350&q=80');"></div>
+
+    <!-- Status Bar -->
+    <div id="status-bar">
+        <div class="left">
+            <span id="battery">🔋 100%</span>
+        </div>
+        <div class="right">
+            <span id="clock"></span>
+        </div>
+    </div>
+
+    <!-- Notification Shade -->
+    <div id="notification-shade">
+        <p>Notifications go here (simulated)</p>
+    </div>
+
+    <!-- Control Center -->
+    <div id="control-center">
+        <div class="control-btn">Wi-Fi</div>
+        <div class="control-btn">Airplane</div>
+        <div class="control-btn">Mobile Data</div>
+        <div class="control-btn">Volume</div>
+        <div class="control-btn">Brightness</div>
+    </div>
+
+    <!-- Apps Grid -->
+    <div id="apps">
+        <div class="app" onclick="openApp('youtube')">YouTube</div>
+        <div class="app" onclick="openApp('notes')">Notes</div>
+        <div class="app" onclick="openApp('music')">Music</div>
+        <div class="app" onclick="openApp('clock')">Clock</div>
+        <div class="app" onclick="openApp('terminal')">Terminal</div>
+        <div class="app" onclick="openApp('settings')">Settings</div>
+    </div>
+
+    <!-- App Windows -->
+    <div id="youtube" class="app-window flex flex-col">
+        <header>YouTube <button class="close" onclick="closeApp('youtube')">X</button></header>
+        <div class="content grid grid-cols-2 gap-4">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" class="w-full h-48"></iframe>
+            <iframe src="https://www.youtube.com/embed/3JZ_D3ELwOQ" class="w-full h-48"></iframe>
+            <iframe src="https://www.youtube.com/embed/L_jWHffIx5E" class="w-full h-48"></iframe>
+            <iframe src="https://www.youtube.com/embed/tVj0ZTS4WF4" class="w-full h-48"></iframe>
+            <iframe src="https://www.youtube.com/embed/k85mRPqvMbE" class="w-full h-48"></iframe>
+            <iframe src="https://www.youtube.com/embed/fJ9rUzIMcZQ" class="w-full h-48"></iframe>
+        </div>
+    </div>
+
+    <div id="notes" class="app-window flex flex-col">
+        <header>Notes <button class="close" onclick="closeApp('notes')">X</button></header>
+        <div class="content">
+            <textarea class="w-full h-full bg-slate-900 text-white p-2 rounded-lg" placeholder="Write your notes..."></textarea>
+        </div>
+    </div>
+
+    <div id="music" class="app-window flex flex-col">
+        <header>Music <button class="close" onclick="closeApp('music')">X</button></header>
+        <div class="content">
+            <p>Simulated music player.</p>
+        </div>
+    </div>
+
+    <div id="clock" class="app-window flex flex-col">
+        <header>Clock <button class="close" onclick="closeApp('clock')">X</button></header>
+        <div class="content text-center text-3xl" id="clock-app">00:00:00</div>
+    </div>
+
+    <div id="terminal" class="app-window flex flex-col">
+        <header>Terminal <button class="close" onclick="closeApp('terminal')">X</button></header>
+        <div class="content">
+            <p>Fake terminal. Commands not real.</p>
+        </div>
+    </div>
+
+    <div id="settings" class="app-window flex flex-col">
+        <header>Settings <button class="close" onclick="closeApp('settings')">X</button></header>
+        <div class="content">
+            <p>Simulated settings page.</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+
+<script>
+// ================= BOOT ANIMATION =================
+let progress = 0;
+const bootProgress = document.getElementById("boot-progress");
+const bootScreen = document.getElementById("boot-screen");
+const launcher = document.getElementById("launcher");
+
+const bootInterval = setInterval(()=>{
+    progress += 1;
+    bootProgress.style.width = progress + "%";
+    if(progress>=100){
+        clearInterval(bootInterval);
+        bootScreen.classList.add("fade-out");
+        setTimeout(()=>{ bootScreen.style.display="none"; launcher.style.display="flex"; },1000);
+    }
+},30);
+
+// ================= CLOCK =================
+function updateClock(){
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+    document.getElementById("clock").textContent = timeStr;
+    const clockApp = document.getElementById("clock-app");
+    if(clockApp) clockApp.textContent = timeStr;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ================= BATTERY SIM =================
+let batteryLevel = 100;
+setInterval(()=>{
+    batteryLevel -= Math.random()*0.1;
+    if(batteryLevel<10) batteryLevel = 100;
+    document.getElementById("battery").textContent = `🔋 ${Math.floor(batteryLevel)}%`;
+},2000);
+
+// ================= APPS =================
+function openApp(id){
+    document.getElementById(id).style.display="flex";
+}
+function closeApp(id){
+    document.getElementById(id).style.display="none";
+}
+
+// ================= CONTROL CENTER & NOTIFICATION =================
+let ccOpen=false, notifOpen=false;
+document.getElementById("status-bar").addEventListener("click",()=>{
+    if(ccOpen){ 
+        document.getElementById("control-center").style.transform="translateY(100%)";
+        ccOpen=false;
+    }else{
+        document.getElementById("control-center").style.transform="translateY(0)";
+        ccOpen=true;
+    }
+});
+document.getElementById("status-bar").addEventListener("contextmenu",(e)=>{
+    e.preventDefault();
+    notifOpen = !notifOpen;
+    document.getElementById("notification-shade").style.transform = notifOpen ? "translateY(0)" : "translateY(-100%)";
+});
+</script>
+
+</body>
+                          </html>
