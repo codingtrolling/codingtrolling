@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PDF Reader • codingtrolling</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- PDF.js (Mozilla official) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+
+<style>
+body { background-color:#0b0f1a; color:#e2e8f0; }
+
+.reader-box{
+    background:#161e2d;
+    border:1px solid #1e293b;
+    border-radius:1.5rem;
+}
+
+.drop-zone{
+    border:2px dashed #334155;
+    transition:.25s;
+}
+
+.drop-zone:hover{
+    border-color:#3b82f6;
+    background:#0f172a;
+}
+
+canvas{
+    border-radius:1rem;
+    margin:auto;
+}
+</style>
+</head>
+
+<body class="font-sans min-h-screen flex flex-col">
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+
+        <a href="/" class="text-2xl font-black tracking-tighter uppercase">
+            coding<span class="text-blue-500">trolling</span>
+        </a>
+
+        <div id="auth-zone">
+            <a href="/login"
+               class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-bold text-sm transition">
+               Login
+            </a>
+        </div>
+
+    </div>
+</nav>
+
+
+<!-- ================= HEADER ================= -->
+
+<header class="py-14 text-center">
+    <h2 class="text-5xl font-black">
+        PDF <span class="text-blue-500">Reader</span>
+    </h2>
+    <p class="text-slate-400 mt-2">
+        Fast • Private • Local • No uploads
+    </p>
+</header>
+
+
+<!-- ================= READER ================= -->
+
+<main class="flex-grow max-w-5xl mx-auto px-6 mb-20">
+
+    <div class="reader-box p-8 space-y-6">
+
+        <!-- Drop zone -->
+        <div id="drop"
+             class="drop-zone p-14 text-center rounded-xl cursor-pointer">
+            <p class="text-slate-400">
+                Drag & Drop PDF here<br>
+                or click to select
+            </p>
+            <input type="file" id="fileInput" class="hidden" accept="application/pdf">
+        </div>
+
+        <!-- Controls -->
+        <div id="controls" class="hidden flex flex-wrap justify-center gap-3">
+
+            <button onclick="prevPage()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">◀ Prev</button>
+
+            <span class="px-3 py-2 text-sm text-slate-400">
+                Page <span id="pageNum">1</span> / <span id="pageCount">1</span>
+            </span>
+
+            <button onclick="nextPage()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">Next ▶</button>
+
+            <button onclick="zoomOut()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">− Zoom</button>
+            <button onclick="zoomIn()" class="bg-slate-700 px-4 py-2 rounded-lg hover:bg-slate-600">+ Zoom</button>
+
+            <button onclick="clearPDF()" class="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-500">Clear</button>
+        </div>
+
+        <!-- Canvas -->
+        <div class="flex justify-center overflow-auto">
+            <canvas id="pdfCanvas"></canvas>
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="mt-auto border-t border-slate-800 p-10 bg-slate-900/50 text-center space-y-4">
+
+    <p class="text-slate-500 font-bold">&copy; 2026 codingtrolling company</p>
+
+    <div class="space-x-6 text-sm">
+        <a href="/terms" class="text-blue-500 hover:text-blue-400 font-semibold">Terms of Service</a>
+        <a href="/privacy" class="text-blue-500 hover:text-blue-400 font-semibold">Privacy Policy</a>
+    </div>
+
+    <p class="text-slate-400 font-mono text-xs">
+        contact.codingtrolling@gmail.com
+    </p>
+
+</footer>
+
+
+<!-- ================= SCRIPT ================= -->
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js";
+
+let pdfDoc = null;
+let pageNum = 1;
+let scale = 1.2;
+
+const canvas = document.getElementById("pdfCanvas");
+const ctx = canvas.getContext("2d");
+
+const drop = document.getElementById("drop");
+const input = document.getElementById("fileInput");
+const controls = document.getElementById("controls");
+
+drop.onclick = () => input.click();
+
+drop.ondragover = e => e.preventDefault();
+
+drop.ondrop = e => {
+    e.preventDefault();
+    loadPDF(e.dataTransfer.files[0]);
+};
+
+input.onchange = () => loadPDF(input.files[0]);
+
+async function loadPDF(file){
+    if(!file) return;
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    pdfDoc = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+
+    pageNum = 1;
+
+    document.getElementById("pageCount").textContent = pdfDoc.numPages;
+
+    controls.classList.remove("hidden");
+
+    renderPage();
+}
+
+async function renderPage(){
+    const page = await pdfDoc.getPage(pageNum);
+    const viewport = page.getViewport({scale});
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({
+        canvasContext: ctx,
+        viewport
+    }).promise;
+
+    document.getElementById("pageNum").textContent = pageNum;
+}
+
+function nextPage(){
+    if(pageNum >= pdfDoc.numPages) return;
+    pageNum++;
+    renderPage();
+}
+
+function prevPage(){
+    if(pageNum <= 1) return;
+    pageNum--;
+    renderPage();
+}
+
+function zoomIn(){
+    scale += 0.2;
+    renderPage();
+}
+
+function zoomOut(){
+    scale = Math.max(0.6, scale - 0.2);
+    renderPage();
+}
+
+function clearPDF(){
+    pdfDoc = null;
+    canvas.width = 0;
+    canvas.height = 0;
+    controls.classList.add("hidden");
+}
+</script>
+
+</body>
+  </html>
