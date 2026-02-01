@@ -6,80 +6,33 @@
 <title>CodingTrolling Android Launcher</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-/* BODY */
-body, html { margin:0; padding:0; height:100%; font-family:sans-serif; background:#0b0f1a; color:#e2e8f0; overflow:hidden; }
-
-/* BOOT ANIMATION */
-#boot-screen {
-  position:absolute; inset:0; background:#0b0f1a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000; transition:opacity 1s;
-}
-#boot-screen.fade-out { opacity:0; pointer-events:none; }
-#boot-screen h1 span { color:#00ffff; } /* cyan TROLLING */
-#boot-progress { height:6px; background:#2563eb; width:0; transition:width 0.1s; border-radius:3px; }
-
-/* LAUNCHER */
-#launcher { display:none; position:relative; height:100vh; width:100vw; overflow:hidden; }
-
-/* WALLPAPER */
-#wallpaper { position:absolute; inset:0; background-size:cover; background-position:center; z-index:0; }
-
-/* STATUS BAR */
-#status-bar { height:28px; background:rgba(22,30,45,0.8); color:white; display:flex; justify-content:space-between; align-items:center; padding:0 8px; font-size:12px; z-index:20; position:absolute; top:0; width:100%; cursor:pointer; border-bottom:1px solid #1e293b; }
-#status-bar .left, #status-bar .right { display:flex; gap:6px; align-items:center; }
-#clock { font-weight:bold; }
-
-/* NOTIFICATIONS */
-#notification-shade { position:absolute; top:0; left:0; right:0; background:rgba(22,30,45,0.95); color:white; padding:12px; transform:translateY(-100%); transition:transform 0.3s; z-index:30; border-bottom:1px solid #1e293b; }
-
-/* CONTROL CENTER */
-#control-center { position:absolute; bottom:0; left:0; right:0; background:rgba(22,30,45,0.95); padding:12px; transform:translateY(100%); transition:transform 0.3s; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; z-index:30; }
-.control-btn { background:#161e2d; padding:6px 10px; text-align:center; border-radius:1rem; cursor:pointer; font-size:0.75rem; user-select:none; transition:0.2s; min-height:40px; display:flex; align-items:center; justify-content:center; }
-.control-btn:hover { background:#2563eb; }
-
-/* APPS GRID */
-#apps { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; position:absolute; top:36px; left:0; right:0; padding:20px; z-index:10; }
-.app { background:#161e2d; color:white; text-align:center; padding:8px 12px; border-radius:1.5rem; cursor:pointer; transition:0.3s; border:1px solid #1e293b; font-size:0.875rem; display:flex; align-items:center; justify-content:center; min-height:48px; }
-.app:hover { background:#2563eb; }
-
-/* APP WINDOWS */
-.app-window {
-    position:absolute;
-    background:#161e2d;
-    border-radius:1.5rem;
-    border:1px solid #1e293b;
-    box-shadow:0 15px 30px rgba(0,0,0,0.4);
-    display:flex;
-    flex-direction:column;
-    z-index:40;
-    width:400px;
-    height:300px;
-    top:100px;
-    left:100px;
-    transform:scale(0.8);
-    opacity:0;
-    transition:all 0.3s ease;
-}
-.app-window.active {
-    opacity:1;
-    transform:scale(1);
-}
-.app-window header {
-    background:#0f172a; 
-    padding:10px; 
-    font-weight:bold; 
-    display:flex; 
-    justify-content:space-between; 
-    border-radius:1.5rem 1.5rem 0 0; 
-    border-bottom:1px solid #1e293b;
-    cursor:move;
-}
-.app-window .content { flex-grow:1; padding:12px; overflow:auto; color:white; }
-
-/* CLOSE BUTTON */
-.app-window button.close { background:red; color:white; border:none; padding:4px 8px; border-radius:0.5rem; cursor:pointer; }
-
-/* DRAGGING */
-.dragging { opacity:0.9; }
+body,html{margin:0;padding:0;height:100%;font-family:sans-serif;background:#0b0f1a;color:#e2e8f0;overflow:hidden;}
+#boot-screen{position:absolute;inset:0;background:#0b0f1a;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1000;transition:opacity 1s;}
+#boot-screen.fade-out{opacity:0;pointer-events:none;}
+#boot-screen h1 span{color:#00ffff;}
+#boot-progress{height:6px;background:#2563eb;width:0;transition:width 0.1s;border-radius:3px;}
+#launcher{display:none;position:relative;height:100vh;width:100vw;overflow:hidden;}
+#wallpaper{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;}
+#status-bar{height:28px;background:rgba(22,30,45,0.8);color:white;display:flex;justify-content:space-between;align-items:center;padding:0 8px;font-size:12px;z-index:20;position:absolute;top:0;width:100%;border-bottom:1px solid #1e293b;cursor:pointer;}
+#status-bar .left,#status-bar .right{display:flex;gap:6px;align-items:center;}
+#clock{font-weight:bold;}
+#notification-shade{position:absolute;top:0;left:0;right:0;background:rgba(22,30,45,0.95);color:white;padding:12px;transform:translateY(-100%);transition:transform 0.3s;z-index:30;border-bottom:1px solid #1e293b;}
+#control-center{position:absolute;bottom:0;left:0;right:0;background:rgba(22,30,45,0.95);padding:12px;transform:translateY(100%);transition:transform 0.3s;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;z-index:30;}
+.control-btn{background:#161e2d;padding:6px 10px;text-align:center;border-radius:1rem;cursor:pointer;font-size:0.75rem;user-select:none;min-height:40px;display:flex;align-items:center;justify-content:center;transition:0.2s;}
+.control-btn:hover{background:#2563eb;}
+#apps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;position:absolute;top:36px;left:0;right:0;padding:20px;z-index:10;}
+.app{background:#161e2d;color:white;text-align:center;padding:8px 12px;border-radius:1.5rem;cursor:pointer;transition:0.3s;border:1px solid #1e293b;font-size:0.875rem;display:flex;align-items:center;justify-content:center;min-height:48px;}
+.app:hover{background:#2563eb;}
+.app-window{position:absolute;background:#161e2d;border-radius:1.5rem;border:1px solid #1e293b;box-shadow:0 15px 30px rgba(0,0,0,0.4);display:flex;flex-direction:column;z-index:40;width:400px;height:300px;top:100px;left:100px;transform:scale(0.8);opacity:0;transition:all 0.3s ease;}
+.app-window.active{opacity:1;transform:scale(1);}
+.app-window header{background:#0f172a;padding:10px;font-weight:bold;display:flex;justify-content:space-between;border-radius:1.5rem 1.5rem 0 0;border-bottom:1px solid #1e293b;cursor:move;}
+.app-window .content{flex-grow:1;padding:12px;overflow:auto;color:white;}
+.app-window button.close{background:red;color:white;border:none;padding:4px 8px;border-radius:0.5rem;cursor:pointer;}
+.dragging{opacity:0.9;}
+textarea.notes{width:100%;height:100%;background:#161e2d;color:white;padding:8px;border-radius:1rem;resize:none;border:none;outline:none;}
+audio{width:100%;margin-top:6px;}
+input[type=file]{width:100%;margin-top:6px;}
+input, button{font-family:sans-serif;}
 </style>
 </head>
 <body>
@@ -96,26 +49,18 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
 <!-- LAUNCHER -->
 <div id="launcher">
   <div id="wallpaper" style="background-image:url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1350&q=80');"></div>
-  
-  <!-- STATUS BAR -->
   <div id="status-bar">
     <div class="left"><span id="battery">🔋 100%</span></div>
     <div class="right"><span id="clock"></span></div>
   </div>
-
-  <!-- NOTIFICATION SHADE -->
   <div id="notification-shade"><p>Notifications (simulated)</p></div>
-
-  <!-- CONTROL CENTER -->
   <div id="control-center">
-    <div class="control-btn">Wi-Fi</div>
-    <div class="control-btn">Airplane</div>
-    <div class="control-btn">Mobile Data</div>
-    <div class="control-btn">Volume</div>
-    <div class="control-btn">Brightness</div>
+    <div class="control-btn" onclick="alert('Wi-Fi toggled')">Wi-Fi</div>
+    <div class="control-btn" onclick="alert('Airplane mode toggled')">Airplane</div>
+    <div class="control-btn" onclick="alert('Mobile Data toggled')">Mobile Data</div>
+    <div class="control-btn" onclick="alert('Volume changed')">Volume</div>
+    <div class="control-btn" onclick="alert('Brightness changed')">Brightness</div>
   </div>
-
-  <!-- APPS -->
   <div id="apps">
     <div class="app" onclick="openApp('youtube')">YouTube</div>
     <div class="app" onclick="openApp('notes')">Notes</div>
@@ -140,12 +85,17 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
 
   <div id="notes" class="app-window">
     <header>Notes <button class="close" onclick="closeApp('notes')">X</button></header>
-    <div class="content"><textarea class="w-full h-full bg-slate-900 text-white p-2 rounded-lg"></textarea></div>
+    <div class="content">
+      <textarea class="notes" id="notes-area" placeholder="Type your notes..."></textarea>
+    </div>
   </div>
 
   <div id="music" class="app-window">
     <header>Music <button class="close" onclick="closeApp('music')">X</button></header>
-    <div class="content">Simulated Music Player</div>
+    <div class="content">
+      <input type="file" id="music-file" accept="audio/*">
+      <audio id="music-player" controls></audio>
+    </div>
   </div>
 
   <div id="clock-app" class="app-window">
@@ -155,12 +105,19 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
 
   <div id="terminal" class="app-window">
     <header>Terminal <button class="close" onclick="closeApp('terminal')">X</button></header>
-    <div class="content">Fake terminal.</div>
+    <div class="content">
+      <div id="terminal-output" style="font-family:monospace;white-space:pre-wrap;"></div>
+      <input type="text" id="terminal-input" style="width:100%;background:#161e2d;color:white;border:none;outline:none;padding:6px;border-radius:6px;" placeholder="Type command and press Enter">
+    </div>
   </div>
 
   <div id="settings" class="app-window">
     <header>Settings <button class="close" onclick="closeApp('settings')">X</button></header>
-    <div class="content">Simulated settings.</div>
+    <div class="content">
+      <label>Wallpaper URL:</label>
+      <input type="text" id="wallpaper-url" class="w-full mt-2 p-1 rounded bg-slate-900 text-white" placeholder="https://...">
+      <button onclick="changeWallpaper()" class="mt-2 bg-blue-600 px-3 py-1 rounded">Apply</button>
+    </div>
   </div>
 
 </div>
@@ -244,6 +201,43 @@ document.addEventListener("mousemove",(e)=>{
     }
 });
 document.addEventListener("mouseup",()=>{ if(dragItem){ dragItem.classList.remove("dragging"); dragItem=null; } });
+
+// NOTES PERSISTENCE
+const notesArea=document.getElementById("notes-area");
+notesArea.value=localStorage.getItem("notes")||"";
+notesArea.addEventListener("input",()=>{ localStorage.setItem("notes",notesArea.value); });
+
+// MUSIC PLAYER
+const musicInput=document.getElementById("music-file");
+const musicPlayer=document.getElementById("music-player");
+musicInput.addEventListener("change",()=>{ 
+    const file=musicInput.files[0];
+    if(file){ musicPlayer.src=URL.createObjectURL(file); musicPlayer.play(); }
+});
+
+// TERMINAL
+const termInput=document.getElementById("terminal-input");
+const termOutput=document.getElementById("terminal-output");
+termInput.addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"){
+        const cmd=termInput.value.trim();
+        if(cmd==="help"){ termOutput.innerHTML+="\nCommands: help, clear, echo [text], time";}
+        else if(cmd==="clear"){ termOutput.innerHTML="";}
+        else if(cmd.startsWith("echo ")){ termOutput.innerHTML+="\n"+cmd.slice(5);}
+        else if(cmd==="time"){ termOutput.innerHTML+="\n"+new Date().toLocaleTimeString();}
+        else{ termOutput.innerHTML+="\nCommand not found";}
+        termInput.value="";
+        termOutput.scrollTop=termOutput.scrollHeight;
+    }
+});
+
+// SETTINGS
+function changeWallpaper(){
+    const url=document.getElementById("wallpaper-url").value;
+    if(url){ document.getElementById("wallpaper").style.backgroundImage=`url('${url}')`; localStorage.setItem("wallpaper",url);}
+}
+const savedWP=localStorage.getItem("wallpaper");
+if(savedWP) document.getElementById("wallpaper").style.backgroundImage=`url('${savedWP}')`;
 </script>
 </body>
-      </html>
+  </html>
