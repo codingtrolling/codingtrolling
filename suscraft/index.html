@@ -1,10 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<title>codingtrolling // SusCraft</title>
+<title>SusCraft</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
@@ -13,20 +11,21 @@
 <style>
 body{
   margin:0;
-  overflow:hidden;
   background:#0b0f1a;
+  overflow:hidden;
   font-family:sans-serif;
-  color:#e2e8f0;
+  color:white;
 }
 
-/* ===== canvas behind UI ===== */
+/* 🚨 CRITICAL FIX */
 canvas{
   position:fixed;
   inset:0;
   z-index:0;
+  pointer-events:none; /* prevents click stealing */
 }
 
-/* ===== UI always above ===== */
+/* UI always above */
 .ui{
   position:fixed;
   z-index:10;
@@ -39,36 +38,15 @@ canvas{
   align-items:center;
   justify-content:center;
   background:rgba(0,0,0,.85);
-  backdrop-filter:blur(8px);
 }
 
 /* button */
 .btn{
   background:#2563eb;
-  padding:12px 20px;
+  padding:14px 24px;
   border-radius:12px;
   font-weight:700;
   cursor:pointer;
-}
-
-/* inventory */
-#inventory{
-  bottom:10px;
-  left:50%;
-  transform:translateX(-50%);
-  display:none;
-  gap:6px;
-}
-
-.slot{
-  width:40px;
-  height:40px;
-  border-radius:10px;
-  border:2px solid #1e293b;
-  cursor:pointer;
-}
-.slot.active{
-  border-color:#3b82f6;
 }
 </style>
 </head>
@@ -77,56 +55,29 @@ canvas{
 
 <!-- ===== MENU ===== -->
 <div id="menu" class="ui">
-  <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl text-center">
-    <h1 class="text-3xl font-black mb-4">
-      Sus<span class="text-blue-500">Craft</span>
-    </h1>
-
-    <!-- THIS BUTTON NOW 100% WORKS -->
-    <button id="playBtn" class="btn w-full">
-      Play
-    </button>
-  </div>
+  <button id="play" class="btn">Play</button>
 </div>
-
-<!-- inventory -->
-<div id="inventory" class="ui flex"></div>
 
 <script>
 /* ======================
-   BASIC SETUP
+   THREE
 ====================== */
 
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
-camera.position.set(0,5,10);
+camera.position.set(0,3,8);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
-/* 🚨 IMPORTANT FIX HERE */
+/* pointer lock only on canvas */
 const controls = new THREE.PointerLockControls(camera, renderer.domElement);
-
 scene.add(controls.getObject());
 
-window.onresize=()=>{
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
- renderer.setSize(innerWidth,innerHeight);
-};
-
 /* ======================
-   LIGHT
-====================== */
-
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(10,20,10);
-scene.add(light);
-
-/* ======================
-   SIMPLE BLOCK WORLD
+   SIMPLE FLOOR
 ====================== */
 
 const geo = new THREE.BoxGeometry(1,1,1);
@@ -134,23 +85,15 @@ const mat = new THREE.MeshStandardMaterial({color:0x1e293b});
 
 for(let x=-20;x<20;x++){
  for(let z=-20;z<20;z++){
-   const cube = new THREE.Mesh(geo,mat);
-   cube.position.set(x,0,z);
-   scene.add(cube);
+  const cube=new THREE.Mesh(geo,mat);
+  cube.position.set(x,0,z);
+  scene.add(cube);
  }
 }
 
-/* ======================
-   INVENTORY UI
-====================== */
-
-const inv = document.getElementById("inventory");
-
-for(let i=0;i<4;i++){
- const s=document.createElement("div");
- s.className="slot";
- inv.appendChild(s);
-}
+const light=new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
 
 /* ======================
    MOVEMENT
@@ -162,8 +105,7 @@ onkeydown=e=>keys[e.code]=true;
 onkeyup=e=>keys[e.code]=false;
 
 function move(){
- const s=0.12;
-
+ const s=0.15;
  if(keys.KeyW) controls.moveForward(s);
  if(keys.KeyS) controls.moveForward(-s);
  if(keys.KeyA) controls.moveRight(-s);
@@ -171,16 +113,20 @@ function move(){
 }
 
 /* ======================
-   PLAY BUTTON (FIXED)
+   PLAY BUTTON
 ====================== */
 
-const menu = document.getElementById("menu");
+const play=document.getElementById("play");
 
-document.getElementById("playBtn").onclick = () => {
-  menu.style.display = "none";
-  inv.style.display = "flex";
+play.onclick=()=>{
 
-  /* pointer lock ONLY after click */
+  /* hide menu */
+  document.getElementById("menu").style.display="none";
+
+  /* allow canvas to receive mouse */
+  renderer.domElement.style.pointerEvents="auto";
+
+  /* lock */
   controls.lock();
 };
 
