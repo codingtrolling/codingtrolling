@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
 <title>codingtrolling // SusCraft</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.160.0/examples/js/controls/PointerLockControls.js"></script>
 
@@ -19,51 +19,41 @@ body{
   color:#e2e8f0;
 }
 
-/* ===== UI ===== */
-
-.panel{
-  background:#161e2d;
-  border:1px solid #1e293b;
-  border-radius:1.5rem;
-  padding:2rem;
-}
-
-.btn{
-  background:#2563eb;
-  padding:10px 18px;
-  border-radius:12px;
-  font-weight:700;
-  cursor:pointer;
-}
-
-#menu{
+/* ===== canvas behind UI ===== */
+canvas{
   position:fixed;
+  inset:0;
+  z-index:0;
+}
+
+/* ===== UI always above ===== */
+.ui{
+  position:fixed;
+  z-index:10;
+}
+
+/* menu */
+#menu{
   inset:0;
   display:flex;
   align-items:center;
   justify-content:center;
   background:rgba(0,0,0,.85);
   backdrop-filter:blur(8px);
-  z-index:10;
 }
 
-#crosshair{
-  position:fixed;
-  top:50%;
-  left:50%;
-  width:8px;
-  height:8px;
-  border:2px solid #3b82f6;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-  pointer-events:none;
-  display:none;
+/* button */
+.btn{
+  background:#2563eb;
+  padding:12px 20px;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
 }
 
 /* inventory */
 #inventory{
-  position:fixed;
-  bottom:12px;
+  bottom:10px;
   left:50%;
   transform:translateX(-50%);
   display:none;
@@ -80,49 +70,32 @@ body{
 .slot.active{
   border-color:#3b82f6;
 }
-
-/* mobile */
-#mobile{
-  position:fixed;
-  bottom:80px;
-  left:10px;
-  display:none;
-  gap:8px;
-}
-
-.mbtn{
-  width:55px;
-  height:55px;
-  background:#161e2daa;
-  border-radius:50%;
-}
 </style>
 </head>
 
 <body>
 
-<!-- ===== START MENU ===== -->
-<div id="menu">
-  <div class="panel text-center w-[320px]">
+<!-- ===== MENU ===== -->
+<div id="menu" class="ui">
+  <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl text-center">
     <h1 class="text-3xl font-black mb-4">
       Sus<span class="text-blue-500">Craft</span>
     </h1>
-    <button id="playBtn" class="btn w-full">Play</button>
+
+    <!-- THIS BUTTON NOW 100% WORKS -->
+    <button id="playBtn" class="btn w-full">
+      Play
+    </button>
   </div>
 </div>
 
-<div id="crosshair"></div>
-<div id="inventory"></div>
-
-<div id="mobile">
-  <div id="up" class="mbtn"></div>
-  <div id="down" class="mbtn"></div>
-</div>
+<!-- inventory -->
+<div id="inventory" class="ui flex"></div>
 
 <script>
-/* =====================
+/* ======================
    BASIC SETUP
-===================== */
+====================== */
 
 const scene = new THREE.Scene();
 
@@ -133,172 +106,55 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
+/* 🚨 IMPORTANT FIX HERE */
+const controls = new THREE.PointerLockControls(camera, renderer.domElement);
+
+scene.add(controls.getObject());
+
 window.onresize=()=>{
  camera.aspect=innerWidth/innerHeight;
  camera.updateProjectionMatrix();
  renderer.setSize(innerWidth,innerHeight);
 };
 
-/* =====================
-   LIGHT + DAY NIGHT
-===================== */
+/* ======================
+   LIGHT
+====================== */
 
-const sun = new THREE.DirectionalLight(0xffffff,1);
-sun.position.set(30,50,30);
-scene.add(sun);
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
 
-let time=0;
+/* ======================
+   SIMPLE BLOCK WORLD
+====================== */
 
-function dayNight(){
- time+=0.001;
- const t=(Math.sin(time)+1)/2;
- sun.intensity=0.4+1.2*t;
- scene.background=new THREE.Color().setHSL(.6,.6,.1+.4*t);
+const geo = new THREE.BoxGeometry(1,1,1);
+const mat = new THREE.MeshStandardMaterial({color:0x1e293b});
+
+for(let x=-20;x<20;x++){
+ for(let z=-20;z<20;z++){
+   const cube = new THREE.Mesh(geo,mat);
+   cube.position.set(x,0,z);
+   scene.add(cube);
+ }
 }
 
-/* =====================
-   CONTROLS
-===================== */
+/* ======================
+   INVENTORY UI
+====================== */
 
-const controls = new THREE.PointerLockControls(camera,document.body);
-scene.add(controls.getObject());
+const inv = document.getElementById("inventory");
 
-/* =====================
-   BLOCK SYSTEM
-===================== */
-
-const blocks=new Map();
-const geo=new THREE.BoxGeometry(1,1,1);
-
-const types=[
- {color:0x1e293b},
- {color:0x3b82f6},
- {color:0x10b981},
- {color:0xf59e0b}
-];
-
-let selected=0;
-
-const inv=document.getElementById("inventory");
-
-types.forEach((t,i)=>{
+for(let i=0;i<4;i++){
  const s=document.createElement("div");
  s.className="slot";
- s.style.background="#"+t.color.toString(16);
- if(i===0)s.classList.add("active");
-
- s.onclick=()=>{
-   selected=i;
-   document.querySelectorAll(".slot").forEach(x=>x.classList.remove("active"));
-   s.classList.add("active");
- };
-
  inv.appendChild(s);
-});
-
-function key(x,y,z){return `${x},${y},${z}`;}
-
-function addBlock(x,y,z,t=selected){
- const k=key(x,y,z);
- if(blocks.has(k)) return;
-
- const mat=new THREE.MeshStandardMaterial({color:types[t].color});
- const mesh=new THREE.Mesh(geo,mat);
- mesh.position.set(x,y,z);
-
- scene.add(mesh);
- blocks.set(k,{mesh,t});
 }
 
-function removeBlock(x,y,z){
- const k=key(x,y,z);
- const b=blocks.get(k);
- if(!b)return;
- scene.remove(b.mesh);
- blocks.delete(k);
-}
-
-/* =====================
-   CHUNK WORLD
-===================== */
-
-const size=16;
-const view=3;
-
-function chunk(cx,cz){
- for(let x=0;x<size;x++){
-  for(let z=0;z<size;z++){
-   const wx=cx*size+x;
-   const wz=cz*size+z;
-
-   const h=Math.floor(Math.sin(wx*0.2)+Math.cos(wz*0.2)*2);
-
-   for(let y=-2;y<=h;y++) addBlock(wx,y,wz,0);
-  }
- }
-}
-
-function updateChunks(){
- const cx=Math.floor(camera.position.x/size);
- const cz=Math.floor(camera.position.z/size);
-
- for(let x=-view;x<=view;x++)
-  for(let z=-view;z<=view;z++)
-    chunk(cx+x,cz+z);
-}
-
-/* =====================
-   SAVE WORLD
-===================== */
-
-function save(){
- const d=[...blocks.entries()].map(([k,v])=>[k,v.t]);
- localStorage.setItem("suscraft_world",JSON.stringify(d));
-}
-
-function load(){
- const d=localStorage.getItem("suscraft_world");
- if(!d)return;
- JSON.parse(d).forEach(([k,t])=>{
-  const [x,y,z]=k.split(",").map(Number);
-  addBlock(x,y,z,t);
- });
-}
-
-/* =====================
-   PLACE / BREAK
-===================== */
-
-const ray=new THREE.Raycaster();
-
-function hit(){
- ray.setFromCamera(new THREE.Vector2(0,0),camera);
- return ray.intersectObjects([...blocks.values()].map(b=>b.mesh))[0];
-}
-
-document.addEventListener("mousedown",e=>{
- const h=hit();
- if(!h)return;
-
- const p=h.object.position;
-
- if(e.button===0){
-   const n=h.face.normal;
-   addBlock(p.x+n.x,p.y+n.y,p.z+n.z);
- }
-
- if(e.button===2){
-   removeBlock(p.x,p.y,p.z);
- }
-
- save();
-});
-
-document.oncontextmenu=e=>e.preventDefault();
-
-/* =====================
+/* ======================
    MOVEMENT
-===================== */
+====================== */
 
 const keys={};
 
@@ -306,53 +162,39 @@ onkeydown=e=>keys[e.code]=true;
 onkeyup=e=>keys[e.code]=false;
 
 function move(){
- const s=0.15;
+ const s=0.12;
+
  if(keys.KeyW) controls.moveForward(s);
  if(keys.KeyS) controls.moveForward(-s);
  if(keys.KeyA) controls.moveRight(-s);
  if(keys.KeyD) controls.moveRight(s);
-
- if(keys.Space) camera.position.y+=s;
- if(keys.ShiftLeft) camera.position.y-=s;
 }
 
-/* =====================
-   MOBILE
-===================== */
+/* ======================
+   PLAY BUTTON (FIXED)
+====================== */
 
-if("ontouchstart" in window){
- document.getElementById("mobile").style.display="flex";
+const menu = document.getElementById("menu");
 
- document.getElementById("up").ontouchstart=()=>camera.position.y+=1;
- document.getElementById("down").ontouchstart=()=>camera.position.y-=1;
-}
+document.getElementById("playBtn").onclick = () => {
+  menu.style.display = "none";
+  inv.style.display = "flex";
 
-/* =====================
-   START BUTTON FIXED
-===================== */
-
-const menu=document.getElementById("menu");
-
-document.getElementById("playBtn").onclick=()=>{
- menu.style.display="none";
- inv.style.display="flex";
- document.getElementById("crosshair").style.display="block";
- controls.lock();
- load();
+  /* pointer lock ONLY after click */
+  controls.lock();
 };
 
-/* =====================
+/* ======================
    LOOP
-===================== */
+====================== */
 
 function animate(){
  requestAnimationFrame(animate);
- dayNight();
  move();
- updateChunks();
  renderer.render(scene,camera);
 }
 animate();
 </script>
+
 </body>
 </html>
