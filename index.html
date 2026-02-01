@@ -2,14 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>CodingTrolling • Utility Hub</title>
 
 <style>
-/* =========================
-   CYBER DARK THEME
-========================= */
-
 :root{
   --bg:#0a0f14;
   --card:#111821;
@@ -18,109 +14,56 @@
   --muted:#8aa0b5;
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Consolas, monospace;
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Consolas,monospace}
 
 body{
-  background:linear-gradient(180deg,#060b10,#0a0f14);
+  background:var(--bg);
   color:var(--text);
 }
 
-/* =========================
-   HEADER
-========================= */
-
+/* HEADER */
 header{
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:20px 40px;
-  border-bottom:1px solid #1a2633;
+  border-bottom:1px solid #182330;
 }
 
-.logo{
-  font-size:28px;
-  font-weight:bold;
-  letter-spacing:2px;
-}
-
-.logo span:first-child{
-  color:white;
-}
-
+.logo span:first-child{color:white}
 .logo span:last-child{
   color:var(--cyan);
   text-shadow:0 0 10px var(--cyan);
+  font-weight:bold;
 }
 
 .login-btn{
-  background:transparent;
+  background:none;
   border:1px solid var(--cyan);
   color:var(--cyan);
-  padding:8px 18px;
-  cursor:pointer;
+  padding:8px 16px;
   border-radius:6px;
-  transition:.3s;
+  cursor:pointer;
 }
 
-.login-btn:hover{
-  background:var(--cyan);
-  color:black;
-  box-shadow:0 0 12px var(--cyan);
-}
-
-/* =========================
-   HERO
-========================= */
-
-.hero{
-  text-align:center;
-  padding:50px 20px;
-}
-
-.hero h1{
-  font-size:40px;
-  margin-bottom:10px;
-}
-
-.hero p{
-  color:var(--muted);
-}
-
-/* =========================
-   GRID
-========================= */
-
+/* GRID */
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:25px;
-  padding:40px;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+  padding:30px;
 }
-
-/* =========================
-   CARD
-========================= */
 
 .card{
   background:var(--card);
-  border:1px solid #1a2633;
-  padding:20px;
-  border-radius:12px;
+  padding:18px;
+  border-radius:10px;
+  border:1px solid #1c2733;
   transition:.25s;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
 }
 
 .card:hover{
-  transform:translateY(-6px);
-  box-shadow:0 0 18px rgba(0,255,255,0.35);
-  border-color:var(--cyan);
+  box-shadow:0 0 14px var(--cyan);
 }
 
 .card h3{
@@ -128,48 +71,37 @@ header{
   margin-bottom:8px;
 }
 
-.card p{
-  font-size:14px;
-  color:var(--muted);
-  margin-bottom:15px;
-}
-
 .card button{
-  margin-top:auto;
-  background:var(--cyan);
-  color:black;
-  border:none;
+  margin-top:12px;
+  width:100%;
   padding:8px;
+  background:var(--cyan);
+  border:none;
+  color:black;
   font-weight:bold;
-  border-radius:6px;
   cursor:pointer;
-  transition:.2s;
 }
 
-.card button:hover{
-  box-shadow:0 0 14px var(--cyan);
+/* PAGES */
+.page{
+  display:none;
+  padding:40px;
 }
 
-/* =========================
-   FOOTER
-========================= */
+.page.active{
+  display:block;
+}
+
+.back{
+  margin-bottom:20px;
+  cursor:pointer;
+  color:var(--cyan);
+}
 
 footer{
   text-align:center;
   padding:25px;
-  border-top:1px solid #1a2633;
   color:var(--muted);
-  font-size:14px;
-}
-
-/* small screens */
-@media(max-width:600px){
-  header{
-    padding:15px;
-  }
-  .hero h1{
-    font-size:28px;
-  }
 }
 </style>
 </head>
@@ -177,74 +109,142 @@ footer{
 <body>
 
 <header>
-  <div class="logo">
+  <h2 class="logo">
     <span>CODING</span><span>TROLLING</span>
-  </div>
+  </h2>
   <button class="login-btn">Login</button>
 </header>
 
-<section class="hero">
-  <h1>Utility Hub</h1>
-  <p>Fast • Minimal • Cyber Tools for Everyone</p>
-</section>
+<!-- =========================
+HOME PAGE
+========================= -->
+<div id="home" class="page active">
 
-<section class="grid">
+  <section class="grid">
 
-  <div class="card">
-    <h3>Subway Runner</h3>
-    <p>Run, die, win and score. Harder, minimal edition of Subway Surfers.</p>
-    <button onclick="location.href='subway.html'">Play Now</button>
-  </div>
+    <div class="card">
+      <h3>Subway Runner</h3>
+      <p>Harder minimal Subway game.</p>
+      <button onclick="go('/subway-runner')">Play Now</button>
+    </div>
 
-  <div class="card">
-    <h3>Media Player</h3>
-    <p>Play MP3, MP4, PNG, JPG and more locally without external servers.</p>
-    <button onclick="location.href='player.html'">Use Player</button>
-  </div>
+    <div class="card">
+      <h3>Media Player</h3>
+      <button onclick="go('/media-player')">Use Player</button>
+    </div>
 
-  <div class="card">
-    <h3>PDF Reader</h3>
-    <p>Instant reading & printing with server-powered performance.</p>
-    <button onclick="location.href='pdf.html'">Open Reader</button>
-  </div>
+    <div class="card">
+      <h3>PDF Reader</h3>
+      <button onclick="go('/pdf-reader')">Open Reader</button>
+    </div>
 
-  <div class="card">
-    <h3>Bozin AI</h3>
-    <p>Chat, math, coding help. Enter your Gemini API key to activate.</p>
-    <button onclick="location.href='ai.html'">Use AI</button>
-  </div>
+    <div class="card">
+      <h3>Bozin AI</h3>
+      <button onclick="go('/bozin-ai')">Use AI</button>
+    </div>
 
-  <div class="card">
-    <h3>Android Launcher</h3>
-    <p>Official launcher simulator with apps, boot animation & terminal.</p>
-    <button onclick="location.href='launcher.html'">Use Launcher</button>
-  </div>
+    <div class="card">
+      <h3>Android Launcher</h3>
+      <button onclick="go('/launcher')">Use Launcher</button>
+    </div>
 
-  <div class="card">
-    <h3>Panny Painting</h3>
-    <p>Draw, resize canvas, change colors, download or print artwork.</p>
-    <button onclick="location.href='paint.html'">Use Panny</button>
-  </div>
+    <div class="card">
+      <h3>Panny Painting</h3>
+      <button onclick="go('/panny-paint')">Use Panny</button>
+    </div>
 
-  <div class="card">
-    <h3>SusCraft</h3>
-    <p>Minimal HTML Minecraft-style multiplayer chat sandbox game.</p>
-    <button onclick="location.href='suscraft.html'">Play SusCraft</button>
-  </div>
+    <div class="card">
+      <h3>SusCraft</h3>
+      <button onclick="go('/suscraft')">Play SusCraft</button>
+    </div>
 
-  <div class="card">
-    <h3>Windows 1 Emulator</h3>
-    <p>V86 powered BIOS emulator. Boot and explore classic Windows 1.</p>
-    <button onclick="location.href='emulator.html'">Use Emulator</button>
-  </div>
+    <div class="card">
+      <h3>Windows 1 Emulator</h3>
+      <button onclick="go('/win1-emulator')">Use Emulator</button>
+    </div>
 
-</section>
+  </section>
+</div>
+
+
+<!-- =========================
+TOOL PAGES
+Replace content with your apps later
+========================= -->
+
+<div id="subway-runner" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>Subway Runner</h1>
+  <p>Your game loads here.</p>
+</div>
+
+<div id="media-player" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>Media Player</h1>
+</div>
+
+<div id="pdf-reader" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>PDF Reader</h1>
+</div>
+
+<div id="bozin-ai" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>Bozin AI</h1>
+</div>
+
+<div id="launcher" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>Android Launcher</h1>
+</div>
+
+<div id="panny-paint" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>Panny Painting</h1>
+</div>
+
+<div id="suscraft" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>SusCraft</h1>
+</div>
+
+<div id="win1-emulator" class="page">
+  <div class="back" onclick="go('/')">← Back</div>
+  <h1>Windows 1 Emulator</h1>
+</div>
 
 <footer>
-  © 2026 CodingTrolling Limited<br>
-  contact.codingtrolling@gmail.com<br>
-  Github : @codingtrolling
+© 2026 CodingTrolling Limited<br>
+contact.codingtrolling@gmail.com<br>
+Github : @codingtrolling
 </footer>
 
+
+<script>
+/* =========================
+SPA ROUTER (clean URLs)
+========================= */
+
+function go(path){
+  history.pushState({}, "", path);
+  show(path);
+}
+
+function show(path){
+  document.querySelectorAll(".page")
+    .forEach(p => p.classList.remove("active"));
+
+  let id = path === "/" ? "home" : path.replace("/", "");
+  let page = document.getElementById(id);
+
+  if(page) page.classList.add("active");
+  else document.getElementById("home").classList.add("active");
+}
+
+window.onpopstate = () => show(location.pathname);
+
+show(location.pathname);
+</script>
+
 </body>
-  </html>
+   </html>
