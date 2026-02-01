@@ -39,30 +39,29 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
     background:#161e2d; 
     color:white; 
     text-align:center; 
-    padding:6px 3px; /* smaller padding */
+    padding:6px 12px; /* reasonable padding */
     border-radius:1.5rem; 
     cursor:pointer; 
     transition:0.3s; 
     border:1px solid #1e293b; 
-    font-size:0.875rem; /* smaller font */
+    font-size:0.875rem; 
     display:flex; 
     align-items:center; 
     justify-content:center;
-    height:48px; /* fixed height */
+    min-height:48px; /* ensure button is visible */
 }
-.app:hover { background:#2563eb; }
 
 /* CONTROL CENTER BUTTONS */
 .control-btn { 
     background:#161e2d; 
-    padding:6px; /* smaller padding */
+    padding:6px 10px; /* smaller padding */
     text-align:center; 
     border-radius:1rem; 
     cursor:pointer; 
-    font-size:0.75rem; /* smaller font */
+    font-size:0.75rem; 
     user-select:none; 
     transition:0.2s; 
-    height:40px; /* smaller height */
+    min-height:40px; /* ensure visible */
     display:flex; 
     align-items:center; 
     justify-content:center;
