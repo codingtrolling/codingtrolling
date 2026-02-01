@@ -18,7 +18,7 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
 #boot-progress { height:6px; background:#2563eb; width:0; transition:width 0.1s; border-radius:3px; }
 
 /* LAUNCHER */
-#launcher { display:none; position:relative; height:100vh; width:100vw; overflow:hidden; flex-direction:column; }
+#launcher { display:none; position:relative; height:100vh; width:100vw; overflow:hidden; }
 
 /* WALLPAPER */
 #wallpaper { position:absolute; inset:0; background-size:cover; background-position:center; z-index:0; }
@@ -42,11 +42,44 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
 .app:hover { background:#2563eb; }
 
 /* APP WINDOWS */
-.app-window { position:absolute; inset:20px; background:#161e2d; border-radius:1.5rem; z-index:40; display:none; flex-direction:column; border:1px solid #1e293b; box-shadow:0 15px 30px rgba(0,0,0,0.4); }
-.app-window header { background:#0f172a; padding:10px; font-weight:bold; display:flex; justify-content:space-between; border-radius:1.5rem 1.5rem 0 0; border-bottom:1px solid #1e293b; }
+.app-window {
+    position:absolute;
+    background:#161e2d;
+    border-radius:1.5rem;
+    border:1px solid #1e293b;
+    box-shadow:0 15px 30px rgba(0,0,0,0.4);
+    display:flex;
+    flex-direction:column;
+    z-index:40;
+    width:400px;
+    height:300px;
+    top:100px;
+    left:100px;
+    transform:scale(0.8);
+    opacity:0;
+    transition:all 0.3s ease;
+}
+.app-window.active {
+    opacity:1;
+    transform:scale(1);
+}
+.app-window header {
+    background:#0f172a; 
+    padding:10px; 
+    font-weight:bold; 
+    display:flex; 
+    justify-content:space-between; 
+    border-radius:1.5rem 1.5rem 0 0; 
+    border-bottom:1px solid #1e293b;
+    cursor:move;
+}
 .app-window .content { flex-grow:1; padding:12px; overflow:auto; color:white; }
+
+/* CLOSE BUTTON */
 .app-window button.close { background:red; color:white; border:none; padding:4px 8px; border-radius:0.5rem; cursor:pointer; }
 
+/* DRAGGING */
+.dragging { opacity:0.9; }
 </style>
 </head>
 <body>
@@ -95,13 +128,13 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
   <!-- APP WINDOWS -->
   <div id="youtube" class="app-window">
     <header>YouTube <button class="close" onclick="closeApp('youtube')">X</button></header>
-    <div class="content grid grid-cols-2 gap-4">
-      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" class="w-full h-48"></iframe>
-      <iframe src="https://www.youtube.com/embed/3JZ_D3ELwOQ" class="w-full h-48"></iframe>
-      <iframe src="https://www.youtube.com/embed/L_jWHffIx5E" class="w-full h-48"></iframe>
-      <iframe src="https://www.youtube.com/embed/tVj0ZTS4WF4" class="w-full h-48"></iframe>
-      <iframe src="https://www.youtube.com/embed/k85mRPqvMbE" class="w-full h-48"></iframe>
-      <iframe src="https://www.youtube.com/embed/fJ9rUzIMcZQ" class="w-full h-48"></iframe>
+    <div class="content grid grid-cols-2 gap-2">
+      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" class="w-full h-32"></iframe>
+      <iframe src="https://www.youtube.com/embed/3JZ_D3ELwOQ" class="w-full h-32"></iframe>
+      <iframe src="https://www.youtube.com/embed/L_jWHffIx5E" class="w-full h-32"></iframe>
+      <iframe src="https://www.youtube.com/embed/tVj0ZTS4WF4" class="w-full h-32"></iframe>
+      <iframe src="https://www.youtube.com/embed/k85mRPqvMbE" class="w-full h-32"></iframe>
+      <iframe src="https://www.youtube.com/embed/fJ9rUzIMcZQ" class="w-full h-32"></iframe>
     </div>
   </div>
 
@@ -168,8 +201,18 @@ setInterval(()=>{
 },2000);
 
 // APPS OPEN/CLOSE
-function openApp(id){ document.getElementById(id).style.display="flex"; }
-function closeApp(id){ document.getElementById(id).style.display="none"; }
+let topZ=50;
+function openApp(id){
+    const app=document.getElementById(id);
+    app.style.display="flex";
+    app.classList.add("active");
+    app.style.zIndex=++topZ;
+}
+function closeApp(id){
+    const app=document.getElementById(id);
+    app.classList.remove("active");
+    setTimeout(()=>{ app.style.display="none"; },300);
+}
 
 // CONTROL CENTER & NOTIFICATIONS
 let ccOpen=false, notifOpen=false;
@@ -182,7 +225,25 @@ document.getElementById("status-bar").addEventListener("contextmenu",(e)=>{
     notifOpen=!notifOpen;
     document.getElementById("notification-shade").style.transform = notifOpen ? "translateY(0)" : "translateY(-100%)";
 });
-</script>
 
+// DRAGGING WINDOWS
+let dragItem=null, offsetX=0, offsetY=0;
+document.querySelectorAll(".app-window header").forEach(header=>{
+    header.addEventListener("mousedown",(e)=>{
+        dragItem=header.parentElement;
+        offsetX=e.clientX - dragItem.getBoundingClientRect().left;
+        offsetY=e.clientY - dragItem.getBoundingClientRect().top;
+        dragItem.classList.add("dragging");
+        dragItem.style.zIndex=++topZ;
+    });
+});
+document.addEventListener("mousemove",(e)=>{
+    if(dragItem){
+        dragItem.style.left=(e.clientX - offsetX)+"px";
+        dragItem.style.top=(e.clientY - offsetY)+"px";
+    }
+});
+document.addEventListener("mouseup",()=>{ if(dragItem){ dragItem.classList.remove("dragging"); dragItem=null; } });
+</script>
 </body>
-    </html>
+      </html>
