@@ -34,10 +34,40 @@ body, html { margin:0; padding:0; height:100%; font-family:sans-serif; backgroun
 .control-btn { background:#161e2d; padding:12px; text-align:center; border-radius:1rem; cursor:pointer; font-size:12px; user-select:none; transition:0.2s; }
 .control-btn:hover { background:#2563eb; }
 
-/* APPS GRID */
-#apps { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; position:absolute; top:36px; bottom:0; left:0; right:0; padding:20px; z-index:5; }
-.app { background:#161e2d; color:white; text-align:center; padding:12px; border-radius:1.5rem; cursor:pointer; transition:0.3s; border:1px solid #1e293b; }
+/* APPS GRID BUTTONS */
+.app { 
+    background:#161e2d; 
+    color:white; 
+    text-align:center; 
+    padding:8px 6px; /* smaller padding */
+    border-radius:1.5rem; 
+    cursor:pointer; 
+    transition:0.3s; 
+    border:1px solid #1e293b; 
+    font-size:0.875rem; /* smaller font */
+    display:flex; 
+    align-items:center; 
+    justify-content:center;
+    height:48px; /* fixed height */
+}
 .app:hover { background:#2563eb; }
+
+/* CONTROL CENTER BUTTONS */
+.control-btn { 
+    background:#161e2d; 
+    padding:6px; /* smaller padding */
+    text-align:center; 
+    border-radius:1rem; 
+    cursor:pointer; 
+    font-size:0.75rem; /* smaller font */
+    user-select:none; 
+    transition:0.2s; 
+    height:40px; /* smaller height */
+    display:flex; 
+    align-items:center; 
+    justify-content:center;
+}
+.control-btn:hover { background:#2563eb; }
 
 /* APP WINDOWS */
 .app-window { position:absolute; inset:20px; background:#161e2d; border-radius:1.5rem; z-index:20; display:none; flex-direction:column; border:1px solid #1e293b; box-shadow:0 15px 30px rgba(0,0,0,0.4); }
