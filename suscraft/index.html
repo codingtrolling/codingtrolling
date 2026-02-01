@@ -133,7 +133,8 @@ function updateLighting(){
 // =======================
 document.getElementById('playBtn').onclick = ()=>{
   document.getElementById('menu').style.display = 'none';
-  inventory.style.visibility = 'visible';
+  // now enable canvas clicks if you want controls
+  renderer.domElement.style.pointerEvents = 'auto';
 };
 
 // =======================
