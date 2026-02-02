@@ -3,123 +3,121 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Windows 1 Emulator • CodingTrolling</title>
+<title>codingtrolling // Windows 1 Emulator</title>
 
-<script src="v86.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>me 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 body{
-  background:#0b0f1a;
-  color:#e2e8f0;
-  font-family:sans-serif;
+    background:#0b0f1a;
+    color:#e2e8f0;
 }
 
-/* Emulator screen */
+/* same cyber-dark card */
+.card{
+    background:#161e2d;
+    border:1px solid #1e293b;
+    border-radius:1.5rem;
+}
+
+/* emulator screen */
 #screen{
-  width:100%;
-  height:70vh;
-  background:black;
-  border-radius:1rem;
-  overflow:hidden;
-  border:1px solid #1e293b;
+    background:black;
+    image-rendering: pixelated;
 }
 
-/* Buttons */
-.ctrl-btn{
-  background:#2563eb;
-  padding:8px 14px;
-  border-radius:8px;
-  font-weight:700;
+/* start overlay */
+#boot{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#0b0f1a;
+    z-index:50;
 }
-.ctrl-btn:hover{
-  background:#1d4ed8;
+
+/* button style (fixed height) */
+.btn{
+    background:#2563eb;
+    padding:12px 22px;
+    border-radius:12px;
+    font-weight:bold;
+}
+.btn:hover{
+    background:#1d4ed8;
 }
 </style>
 </head>
+<body class="min-h-screen flex flex-col font-sans">
 
-<body class="min-h-screen flex flex-col">
+<!-- ===== NAV ===== -->
+<nav class="p-6 border-b border-slate-800 bg-slate-900/80">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <h1 class="text-2xl font-black uppercase">
+            CODING<span class="text-cyan-400">TROLLING</span>
+        </h1>
 
-<!-- NAV (same design as hub) -->
-<nav class="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl">
-  <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <h1 class="text-2xl font-black uppercase">
-      coding<span class="text-cyan-400">trolling</span>
-    </h1>
-    <a href="/" class="text-sm text-slate-400 hover:text-cyan-400">Back Home</a>
-  </div>
+        <a href="/" class="text-sm text-slate-400 hover:text-white">
+            ← Back
+        </a>
+    </div>
 </nav>
 
 
-<!-- HEADER -->
-<header class="text-center py-10">
-  <h2 class="text-4xl font-black">
-    Windows <span class="text-cyan-400">1 Emulator</span>
-  </h2>
-  <p class="text-slate-400 mt-2">Powered by v86 • Real BIOS • Real DOS boot</p>
-</header>
+<!-- ===== MAIN ===== -->
+<main class="flex-1 flex items-center justify-center p-8">
 
+<div class="card p-6 w-full max-w-5xl">
 
-<!-- MAIN -->
-<main class="max-w-6xl mx-auto px-6 flex flex-col gap-6">
+    <h2 class="text-2xl font-bold mb-4">
+        Windows 1 Emulator
+    </h2>
 
-  <!-- Controls -->
-  <div class="flex gap-4 justify-center">
-    <button id="startBtn" class="ctrl-btn">Start</button>
-    <button id="resetBtn" class="ctrl-btn">Reset</button>
-    <button id="fsBtn" class="ctrl-btn">Fullscreen</button>
-  </div>
+    <div id="screen"></div>
 
-  <!-- Emulator screen -->
-  <div id="screen"></div>
-
+</div>
 </main>
 
 
-<!-- FOOTER -->
-<footer class="mt-auto border-t border-slate-800 p-8 text-center text-slate-500 text-xs">
-© 2026 CodingTrolling Limited
-</footer>
+<!-- ===== BOOT SCREEN ===== -->
+<div id="boot">
+    <div class="text-center">
+        <h2 class="text-4xl font-black mb-6">
+            CODING<span class="text-cyan-400">TROLLING</span>
+        </h2>
+        <button id="startBtn" class="btn">
+            Start Emulator
+        </button>
+    </div>
+</div>
 
 
+<!-- ===== LIBV86 (NOT v86.js) ===== -->
+<script src="libv86.js"></script>
 
 <script>
 let emulator = null;
 
-function startEmulator(){
+document.getElementById("startBtn").onclick = () => {
 
-  if(emulator) return;
+    document.getElementById("boot").style.display = "none";
 
-  emulator = new V86({
-    wasm_path: "v86.wasm",
-    memory_size: 64 * 1024 * 1024,
-    vga_memory_size: 8 * 1024 * 1024,
+    emulator = new V86Starter({
+        wasm_path: "v86.wasm",
 
-    screen_container: document.getElementById("screen"),
+        memory_size: 64 * 1024 * 1024,
+        vga_memory_size: 8 * 1024 * 1024,
 
-    bios: { url: "bios/seabios.bin" },
-    vga_bios: { url: "bios/vgabios.bin" },
+        screen_container: document.getElementById("screen"),
 
-    fda: { url: "images/win1.img" }, // Windows disk image
+        bios: { url: "bios/seabios.bin" },
+        vga_bios: { url: "bios/vgabios.bin" },
 
-    autostart: true,
-  });
-}
+        hda: { url: "images/windows1.img" },
 
-
-/* Buttons */
-document.getElementById("startBtn").onclick = startEmulator;
-
-document.getElementById("resetBtn").onclick = ()=>{
-  if(emulator){
-    emulator.restart();
-  }
-};
-
-document.getElementById("fsBtn").onclick = ()=>{
-  document.getElementById("screen").requestFullscreen();
+        autostart: true,
+    });
 };
 </script>
 
