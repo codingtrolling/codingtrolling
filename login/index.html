@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="icon.png"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login // codingtrolling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        .login-card { 
+            background: #161e2d; 
+            border: 1px solid #1e293b; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .google-btn {
+            background: #ffffff;
+            color: #1f2937;
+            transition: all 0.2s;
+        }
+        .google-btn:hover {
+            background: #f3f4f6;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black tracking-tighter uppercase">
+                coding<span class="text-blue-500">trolling</span>
+            </h1>
+            <p class="text-slate-500 text-sm mt-2 font-mono">AUTHENTICATION GATEWAY</p>
+        </div>
+
+        <div class="login-card p-8 rounded-3xl text-center">
+            <h2 class="text-2xl font-bold mb-2">Welcome Back</h2>
+            <p class="text-slate-400 text-sm mb-8">Connect your Google account to access SusCraft, Bozin AI, and cloud settings.</p>
+
+            <button onclick="handleGoogleLogin()" class="google-btn w-full flex items-center justify-center gap-3 py-3 rounded-xl font-bold mb-4">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-5 h-5" alt="G">
+                Continue with Google
+            </button>
+
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-700"></div></div>
+                <div class="relative px-3 bg-[#161e2d] text-xs text-slate-500 uppercase">Secure Connection</div>
+            </div>
+
+            <p class="text-xs text-slate-500 leading-relaxed">
+                By signing in, you agree to the <a href="/terms" class="text-blue-500 hover:underline">Terms of Service</a> and <a href="/privacy" class="text-blue-500 hover:underline">Privacy Policy</a>.
+            </p>
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="index.html" class="text-slate-500 hover:text-white text-sm font-bold transition">
+                ← Return to Hub
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function handleGoogleLogin() {
+            // This is where your Google Cloud OAuth logic goes
+            console.log("Redirecting to Google Cloud Identity...");
+            
+            // Example redirect (Replace with your actual Client ID redirect)
+            // window.location.href = "https://accounts.google.com/o/oauth2/v2/auth?...";
+            
+            alert("Google Cloud OAuth initialization starting...");
+        }
+    </script>
+
+</body>
+</html>
