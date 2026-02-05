@@ -61,16 +61,23 @@
     </div>
 
     <script>
-        function handleGoogleLogin() {
-            // This is where your Google Cloud OAuth logic goes
-            console.log("Redirecting to Google Cloud Identity...");
-            
-            // 778775023056-dnrr0d6ujirr01cs0vclfd6gpgseh7kl.apps.googleusercontent.com
-            // window.location.href = "https://accounts.google.com/o/oauth2/v2/auth?...";
-            
-            alert("Google Cloud OAuth initialization starting...");
-        }
-    </script>
+    function handleGoogleLogin() {
+        const client_id = "778775023056-dnrr0d6ujirr01cs0vclfd6gpgseh7kl.apps.googleusercontent.com";
+        // This must match exactly what you put in Google Cloud Console
+        const redirect_uri = window.location.origin + "/index.html"; 
+        const scope = "openid profile email";
+        const response_type = "id_token"; // Returns the JWT token for the profile picture/name
+        
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + 
+            `client_id=${client_id}&` +
+            `redirect_uri=${encodeURIComponent(redirect_uri)}&` +
+            `response_type=${response_type}&` +
+            `scope=${encodeURIComponent(scope)}&` +
+            `nonce=${Math.random().toString(36).substring(2)}`;
+
+        window.location.href = authUrl;
+    }
+</script>
 
 </body>
 </html>
