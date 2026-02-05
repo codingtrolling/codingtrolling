@@ -156,52 +156,73 @@
 </footer>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const token = localStorage.getItem('google_token');
-            // Populate settings inputs if data exists
-            document.getElementById('username-input').value = localStorage.getItem('suscraft_username') || '';
-            document.getElementById('skin-input').value = localStorage.getItem('suscraft_skin') || '';
+    document.addEventListener("DOMContentLoaded", () => {
+        // 1. CATCH THE TOKEN FROM THE URL (After Google Redirect)
+        if (window.location.hash.includes('id_token=')) {
+            const params = new URLSearchParams(window.location.hash.replace('#', '?'));
+            const token = params.get('id_token');
+            if (token) {
+                localStorage.setItem('google_token', token);
+                // Clean the URL so the token disappears from the bar
+                window.history.replaceState({}, document.title, "/");
+            }
+        }
 
-            // Handle URL Hash for settings
-            if(window.location.hash === '#settings') toggleModal(true);
-            window.addEventListener('hashchange', () => toggleModal(window.location.hash === '#settings'));
+        const token = localStorage.getItem('google_token');
+        
+        // Populate settings inputs if data exists
+        document.getElementById('username-input').value = localStorage.getItem('suscraft_username') || '';
+        document.getElementById('skin-input').value = localStorage.getItem('suscraft_skin') || '';
 
-            if (!token) return;
+        // Handle URL Hash for settings modal
+        if(window.location.hash === '#settings') toggleModal(true);
+        window.addEventListener('hashchange', () => toggleModal(window.location.hash === '#settings'));
 
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-                if(!localStorage.getItem('suscraft_skin')) localStorage.setItem('suscraft_skin', payload.picture);
+        if (!token) return;
 
-                document.getElementById('auth-zone').innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-red-500 font-black uppercase">Logout</button>
-                        <div class="relative group">
-                            <img src="${payload.picture}" onclick="openSettings()" class="profile-img" alt="User">
-                            <div class="absolute top-12 right-0 bg-slate-800 p-2 rounded text-[10px] opacity-0 group-hover:opacity-100 transition shadow-xl whitespace-nowrap z-50">
-                                Click image for settings
-                            </div>
+        try {
+            // 2. DECODE THE TOKEN TO GET PICTURE AND NAME
+            const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            
+            // Auto-set skin to Google Photo if none exists
+            if(!localStorage.getItem('suscraft_skin')) {
+                localStorage.setItem('suscraft_skin', payload.picture);
+            }
+
+            // 3. SWAP THE LOGIN BUTTON FOR YOUR PROFILE PIC
+            document.getElementById('auth-zone').innerHTML = `
+                <div class="flex items-center gap-4">
+                    <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-red-500 font-black uppercase transition">Logout</button>
+                    <div class="relative group">
+                        <img src="${payload.picture}" onclick="openSettings()" class="profile-img w-10 h-10 rounded-full border-2 border-blue-500 cursor-pointer hover:scale-110 transition" alt="User">
+                        <div class="absolute top-12 right-0 bg-slate-800 p-2 rounded text-[10px] opacity-0 group-hover:opacity-100 transition shadow-xl whitespace-nowrap z-50 pointer-events-none">
+                            Settings
                         </div>
                     </div>
-                `;
-            } catch (e) {
-                localStorage.removeItem('google_token');
-            }
-        });
-
-        function openSettings() { window.location.hash = 'settings'; }
-        function closeSettings() { window.location.hash = ''; }
-        function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
-
-        function saveProfile() {
-            localStorage.setItem('suscraft_username', document.getElementById('username-input').value);
-            localStorage.setItem('suscraft_skin', document.getElementById('skin-input').value);
-            closeSettings();
+                </div>
+            `;
+        } catch (e) {
+            console.error("Token error:", e);
+            localStorage.removeItem('google_token');
         }
+    });
 
-        function logout() {
-            localStorage.clear();
-            window.location.reload();
-        }
-    </script>
+    function openSettings() { window.location.hash = 'settings'; }
+    function closeSettings() { window.location.hash = ''; }
+    function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
+
+    function saveProfile() {
+        localStorage.setItem('suscraft_username', document.getElementById('username-input').value);
+        localStorage.setItem('suscraft_skin', document.getElementById('skin-input').value);
+        closeSettings();
+        window.location.reload(); // Refresh to apply new skin/name
+    }
+
+    function logout() {
+        localStorage.removeItem('google_token');
+        window.location.href = "/";
+    }
+</script>
+
 </body>
 </html>
