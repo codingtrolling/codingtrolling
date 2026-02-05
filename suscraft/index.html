@@ -1,133 +1,151 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>SusCraft - Multiplayer Prototype</title>
+    <title>SusCraft // Multiplayer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', Courier, monospace; }
-        
-        /* Start Menu */
-        #menu {
-            position: absolute; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8) url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; color: #0f0; text-shadow: 2px 2px #000;
-        }
-        #menu h1 { font-size: 5rem; margin-bottom: 20px; }
-        .btn { 
-            padding: 15px 40px; font-size: 1.5rem; background: #222; color: #0f0; 
-            border: 2px solid #0f0; cursor: pointer; transition: 0.3s;
-        }
-        .btn:hover { background: #0f0; color: #000; }
-
-        /* UI Elements */
-        #hud { position: absolute; top: 10px; left: 10px; color: white; display: none; }
-        #inventory { 
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: none; gap: 10px; background: rgba(0,0,0,0.7); padding: 10px; border: 2px solid #555;
-        }
-        .slot { width: 40px; height: 40px; border: 1px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 8px; }
-        #chat-box { 
-            position: absolute; bottom: 100px; left: 10px; width: 250px; height: 120px; 
-            background: rgba(0,0,0,0.3); color: #0f0; overflow-y: hidden; display: none;
-        }
+        body { margin: 0; overflow: hidden; background: #000; }
+        #crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; pointer-events: none; }
     </style>
 </head>
 <body>
-
-    <div id="menu">
-        <h1>SUSCRAFT</h1>
-        <button class="btn" onclick="startGame()">START MULTIPLAYER</button>
-        <p style="margin-top:20px;">W,A,S,D: Move | SPACE: Fly | SHIFT: Sink</p>
+    <div id="crosshair">+</div>
+    
+    <div class="fixed top-4 left-4 z-50 flex flex-col gap-2">
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700 text-white">
+            <h1 class="font-black text-blue-500 uppercase italic">SusCraft <span class="text-[10px] text-white">Alpha</span></h1>
+            <p id="status" class="text-[10px] text-slate-400">Status: Solo</p>
+            <div class="flex gap-2 mt-2">
+                <button onclick="hostGame()" class="bg-blue-600 px-3 py-1 rounded text-[10px] font-bold uppercase">Host</button>
+                <button onclick="joinGame()" class="bg-slate-700 px-3 py-1 rounded text-[10px] font-bold uppercase">Join</button>
+            </div>
+        </div>
     </div>
 
-    <div id="hud">HP: 100 | Coordinates: <span id="coords">0, 0, 0</span></div>
-    <div id="chat-box" id="chat">Chat: Connecting...</div>
-    <div id="inventory">
-        <div class="slot" style="background: #5d4037;">DIRT</div>
-        <div class="slot" style="background: #757575;">STONE</div>
-        <div class="slot" style="background: #2e7d32;">GRASS</div>
-        <div class="slot" style="background: #ffeb3b; color:black;">GOLD</div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, player, clock;
+        // --- 1. SET UP THREE.JS ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb); // Sky blue
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7.5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // --- 2. WORLD DATA & BLOCKS ---
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const grassMat = new THREE.MeshStandardMaterial({ color: 0x4d9c41 });
+        const dirtMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+        
+        const blocks = [];
+        const worldSize = 20;
+
+        function createBlock(x, y, z, type = 'grass') {
+            const material = type === 'grass' ? grassMat : dirtMat;
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(x, y, z);
+            scene.add(cube);
+            blocks.push(cube);
+        }
+
+        // Generate starting floor
+        for(let x = -worldSize/2; x < worldSize/2; x++) {
+            for(let z = -worldSize/2; z < worldSize/2; z++) {
+                createBlock(x, 0, z);
+            }
+        }
+
+        // --- 3. PLAYER CONTROLS ---
+        camera.position.y = 2;
         let keys = {};
+        document.addEventListener('keydown', (e) => keys[e.code] = true);
+        document.addEventListener('keyup', (e) => keys[e.code] = false);
 
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87ceeb);
-            clock = new THREE.Clock();
+        // Click to place/remove
+        window.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { // Left click: Place
+                const pos = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(3));
+                createBlock(Math.round(pos.x), Math.round(pos.y), Math.round(pos.z), 'dirt');
+                if(conn) conn.send({ type: 'place', x: Math.round(pos.x), y: Math.round(pos.y), z: Math.round(pos.z) });
+            }
+        });
 
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+        // --- 4. MULTIPLAYER LOGIC ---
+        let peer, conn;
+        const myName = localStorage.getItem('suscraft_username') || "Player" + Math.floor(Math.random()*100);
 
-            // Light
-            const light = new THREE.DirectionalLight(0xffffff, 1);
-            light.position.set(5, 10, 7.5);
-            scene.add(light);
-            scene.add(new THREE.AmbientLight(0x404040));
-
-            // Ground (Voxel-ish Floor)
-            const gridHelper = new THREE.GridHelper(100, 100, 0x000000, 0x555555);
-            scene.add(gridHelper);
-            
-            // Create Player Model (The "Sus" Character)
-            const bodyGeo = new THREE.BoxGeometry(1, 1.5, 0.5);
-            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-            player = new THREE.Mesh(bodyGeo, bodyMat);
-            player.position.y = 0.75;
-            
-            // Visor (Make it look like a character)
-            const visorGeo = new THREE.BoxGeometry(0.7, 0.3, 0.2);
-            const visorMat = new THREE.MeshLambertMaterial({ color: 0x88ccff });
-            const visor = new THREE.Mesh(visorGeo, visorMat);
-            visor.position.set(0, 0.4, 0.3);
-            player.add(visor);
-            
-            scene.add(player);
-
-            document.addEventListener('keydown', (e) => keys[e.code] = true);
-            document.addEventListener('keyup', (e) => keys[e.code] = false);
+        function hostGame() {
+            peer = new Peer(myName.toLowerCase().replace(/\s/g, '-'));
+            peer.on('open', (id) => {
+                document.getElementById('status').innerText = "Hosting: " + id;
+                alert("Room created! Share ID: " + id);
+            });
+            peer.on('connection', (c) => {
+                conn = c;
+                initConnection();
+            });
         }
 
-        function startGame() {
-            document.getElementById('menu').style.display = 'none';
-            document.getElementById('hud').style.display = 'block';
-            document.getElementById('inventory').style.display = 'flex';
-            document.getElementById('chat-box').style.display = 'block';
-            init();
-            animate();
+        function joinGame() {
+            const id = prompt("Enter Friend's Room ID:");
+            peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect(id);
+                initConnection();
+            });
         }
 
+        const remotePlayers = {};
+        function initConnection() {
+            document.getElementById('status').innerText = "Status: Connected!";
+            conn.on('data', (data) => {
+                if(data.type === 'move') {
+                    if(!remotePlayers[data.id]) {
+                        remotePlayers[data.id] = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({color: 0xff0000}));
+                        scene.add(remotePlayers[data.id]);
+                    }
+                    remotePlayers[data.id].position.set(data.x, data.y, data.z);
+                }
+                if(data.type === 'place') createBlock(data.x, data.y, data.z, 'dirt');
+            });
+        }
+
+        // --- 5. GAME LOOP ---
         function animate() {
             requestAnimationFrame(animate);
-            let delta = clock.getDelta();
-            let moveSpeed = 5 * delta;
 
-            // Movement Logic
-            if (keys['KeyW']) player.position.z -= moveSpeed;
-            if (keys['KeyS']) player.position.z += moveSpeed;
-            if (keys['KeyA']) player.position.x -= moveSpeed;
-            if (keys['KeyD']) player.position.x += moveSpeed;
+            // Movement
+            const speed = 0.1;
+            if(keys['KeyW']) camera.translateZ(-speed);
+            if(keys['KeyS']) camera.translateZ(speed);
+            if(keys['KeyA']) camera.translateX(-speed);
+            if(keys['KeyD']) camera.translateX(speed);
             
-            // Flying Logic
-            if (keys['Space']) player.position.y += moveSpeed;
-            if (keys['ShiftLeft']) player.position.y -= moveSpeed;
+            // Mouse look logic (Simplified)
+            // For a full game, you'd use PointerLockAPI
 
-            // Camera Follows Player (Third Person)
-            camera.position.set(player.position.x, player.position.y + 3, player.position.z + 7);
-            camera.lookAt(player.position);
-
-            // Update UI
-            document.getElementById('coords').innerText = 
-                `${Math.floor(player.position.x)}, ${Math.floor(player.position.y)}, ${Math.floor(player.position.z)}`;
+            // Sync with Peer
+            if(conn && conn.open) {
+                conn.send({ type: 'move', id: myName, x: camera.position.x, y: camera.position.y, z: camera.position.z });
+            }
 
             renderer.render(scene, camera);
         }
+        animate();
+
+        // Responsive
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
