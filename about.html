@@ -2,50 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="icon.png"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About // CodingTrolling</title>
+    <title>About // codingtrolling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background-color: #050505;
-            color: #e0e0e0;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 20px;
-            line-height: 1.6;
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        .about-card { 
+            background: #161e2d; 
+            border: 1px solid #1e293b; 
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
-        .container { max-width: 800px; margin: auto; border: 1px solid #333; padding: 20px; }
-        h1 { color: #00ff99; text-transform: uppercase; letter-spacing: 5px; }
-        .timeline-box {
-            background: #111;
-            border-left: 4px solid #00ff99;
-            padding: 10px;
-            margin: 20px 0;
-        }
-        a { color: #00ff99; text-decoration: none; border-bottom: 1px dashed #00ff99; }
-        a:hover { background: #00ff99; color: #000; }
+        .highlight { color: #3b82f6; font-weight: 800; }
     </style>
 </head>
-<body>
+<body class="font-sans min-h-screen flex flex-col">
 
-<div class="container">
-    <h1>About CodingTrolling</h1>
-    <p>Established in 1989, CodingTrolling began as a single hypertext node at the dawn of the internet. Today, we are a multi-temporal utility hub.</p>
+    <nav class="p-6 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-tighter uppercase">
+                coding<span class="text-blue-500">trolling</span>
+            </h1>
+            <a href="index.html" class="text-sm font-bold text-slate-400 hover:text-white transition">← Back to Hub</a>
+        </div>
+    </nav>
 
-    <div class="timeline-box">
-        <h3>PROJECT REGISTRY:</h3>
-        <ul>
-            <li><strong>1989:</strong> The original text-only Subway Runner.</li>
-            <li><strong>2001:</strong> The XP Edition upgrade (DHTML enabled).</li>
-            <li><strong>2026:</strong> AI integration and Bozin interface.</li>
-        </ul>
-    </div>
+    <main class="max-w-4xl mx-auto px-6 py-16">
+        <div class="about-card">
+            <h2 class="text-4xl font-black mb-6 tracking-tight">About the <span class="text-blue-500">Hub</span></h2>
+            
+            <p class="text-slate-400 text-lg leading-relaxed mb-8">
+                Codingtrolling is a high-performance <span class="highlight">Utility Hub</span> designed for the modern web. 
+                Started as a passion project in early 2026, it now serves as a central station for 8 specialized tools 
+                running on top of <span class="highlight">Google Cloud</span> infrastructure.
+            </p>
 
-    <p>This site exists to document the evolution of code, from the simplest <code>&lt;H1&gt;</code> tags to modern neural engine interfaces.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <h4 class="text-blue-500 font-bold uppercase text-xs mb-2">Our Mission</h4>
+                    <p class="text-sm text-slate-300">Providing lag-free, cloud-connected tools like SusCraft and Bozin AI directly in the browser.</p>
+                </div>
+                <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <h4 class="text-blue-500 font-bold uppercase text-xs mb-2">Technology</h4>
+                    <p class="text-sm text-slate-300">Built with Tailwind CSS, V86 Cloud engines, and persistent Google Profile integration.</p>
+                </div>
+            </div>
 
-    <p><strong>Contact:</strong> Physical mail only (1989 protocol). Digital signals will be ignored.</p>
+            <h3 class="text-xl font-bold mb-4 text-white">Legacy Timeline</h3>
+            <ul class="space-y-3 text-slate-400 border-l-2 border-blue-600 pl-6">
+                <li><span class="text-white font-mono text-sm">1989:</span> The first hypertext node (Text-only era).</li>
+                <li><span class="text-white font-mono text-sm">2001:</span> Subway Runner XP and the DHTML revolution.</li>
+                <li><span class="text-white font-mono text-sm">2026:</span> The Utility Hub release (Present Day).</li>
+            </ul>
+        </div>
+    </main>
 
-    <hr>
-    <p><a href="index.html">RETURN TO MAIN TERMINAL</a></p>
-</div>
+    <footer class="mt-auto border-t border-slate-800 p-10 bg-slate-900/50 text-center">
+        <p class="text-slate-500 font-bold">&copy; 2026 codingtrolling company</p>
+        <p class="text-slate-400 font-mono text-xs mt-2">contact.codingtrolling@gmail.com</p>
+    </footer>
 
 </body>
 </html>
