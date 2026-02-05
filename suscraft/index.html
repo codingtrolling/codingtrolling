@@ -3,35 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SusCraft Mobile // 2026</title>
+    <title>SusCraft // CodingTrolling</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #000; touch-action: none; font-family: sans-serif; }
         #crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; pointer-events: none; z-index: 10; }
-        .joystick-base { width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; position: fixed; bottom: 40px; left: 40px; }
-        .joystick-stick { width: 50px; height: 50px; background: rgba(59, 130, 246, 0.8); border-radius: 50%; position: absolute; top: 35px; left: 35px; }
+        .joystick-base { width: 100px; height: 100px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; position: fixed; bottom: 40px; left: 40px; z-index: 100; }
+        .joystick-stick { width: 40px; height: 40px; background: rgba(59, 130, 246, 0.8); border-radius: 50%; position: absolute; top: 30px; left: 30px; }
+        #chat-logs::-webkit-scrollbar { width: 4px; }
+        #chat-logs::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="crosshair">+</div>
 
-    <div class="fixed top-4 left-4 z-50 pointer-events-auto">
-        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-white">
-            <h1 class="text-xs font-black text-blue-500 italic uppercase">SusCraft Multiplayer</h1>
-            <p id="room-id" class="text-[9px] text-slate-500 font-mono mt-1">Status: Offline</p>
+    <div class="fixed top-4 left-4 z-50">
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-white shadow-2xl">
+            <h1 class="text-[10px] font-black text-blue-500 uppercase tracking-tighter italic">SusCraft Engine v1.0</h1>
+            <p id="room-id" class="text-[9px] text-slate-500 font-mono">Offline</p>
             <div class="flex gap-2 mt-2">
-                <button onclick="hostWorld()" class="bg-blue-600 px-3 py-1 rounded text-[10px] font-bold">HOST</button>
-                <button onclick="joinWorld()" class="bg-slate-700 px-3 py-1 rounded text-[10px] font-bold">JOIN</button>
+                <button onclick="hostWorld()" class="bg-blue-600 active:bg-blue-700 px-3 py-1 rounded-lg text-[10px] font-black">HOST</button>
+                <button onclick="joinWorld()" class="bg-slate-700 active:bg-slate-800 px-3 py-1 rounded-lg text-[10px] font-black">JOIN</button>
             </div>
         </div>
     </div>
 
-    <div class="fixed bottom-10 right-10 z-50 flex flex-col gap-4 pointer-events-auto">
-        <button onclick="placeBlock()" class="w-20 h-20 bg-blue-600 rounded-full border-4 border-white text-white font-black shadow-2xl active:scale-90">BUILD</button>
-        <button onclick="jump()" class="w-16 h-16 bg-slate-800/80 rounded-full border-2 border-white/20 text-white font-bold active:scale-90">JUMP</button>
+    <div id="chat-container" class="fixed bottom-40 left-4 z-50 pointer-events-none w-64">
+        <div id="chat-logs" class="h-32 overflow-y-auto bg-black/50 rounded-xl p-2 text-[10px] text-white flex flex-col gap-1 mb-2 backdrop-blur-md">
+            <div class="text-slate-400 italic">System: Welcome to SusCraft Chat.</div>
+        </div>
+        <div class="flex gap-2 pointer-events-auto">
+            <input id="chat-input" type="text" placeholder="Troll here..." class="bg-slate-900/90 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white w-full outline-none focus:border-blue-500">
+            <button onclick="sendChatMessage()" class="bg-blue-600 px-2 py-1 rounded-lg text-[10px] font-black text-white">SEND</button>
+        </div>
+    </div>
+
+    <div class="fixed bottom-10 right-10 z-50 flex flex-col gap-4">
+        <button onclick="placeBlock()" class="w-20 h-20 bg-blue-600 rounded-full border-4 border-white text-white font-black shadow-2xl active:scale-90 flex items-center justify-center">BUILD</button>
+        <button onclick="jump()" class="w-16 h-16 bg-slate-800/90 rounded-full border-2 border-white/20 text-white font-bold active:scale-90 flex items-center justify-center text-xs">JUMP</button>
     </div>
 
     <div class="joystick-base" id="joyBase">
@@ -39,40 +51,43 @@
     </div>
 
     <script>
-        // --- 1. CORE ENGINE ---
+        // 1. ENGINE SETUP
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87ceeb);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 10, 7.5);
         scene.add(light, new THREE.AmbientLight(0x404040));
 
-        // --- 2. PHYSICS & WORLD ---
+        // 2. WORLD & PHYSICS
         let velocityY = 0;
-        const gravity = -0.015;
+        const gravity = -0.012;
         const blocks = [];
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const materials = {
+        const mats = {
             grass: new THREE.MeshStandardMaterial({ color: 0x4d9c41 }),
-            dirt: new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+            dirt: new THREE.MeshStandardMaterial({ color: 0x8b4513 }),
+            player: new THREE.MeshStandardMaterial({ color: 0xff0000 })
         };
 
-        function addBlock(x, y, z, type = 'grass') {
-            const cube = new THREE.Mesh(geometry, materials[type]);
+        function addBlock(x, y, z, type = 'grass', remote = false) {
+            const cube = new THREE.Mesh(geometry, mats[type]);
             cube.position.set(Math.round(x), Math.round(y), Math.round(z));
             scene.add(cube);
             blocks.push(cube);
+            if(!remote && conn && conn.open) conn.send({type: 'build', x, y, z});
         }
 
-        // Build flat floor
-        for(let x=-10; x<10; x++) for(let z=-10; z<10; z++) addBlock(x, 0, z);
+        // Init Ground
+        for(let x=-8; x<8; x++) for(let z=-8; z<8; z++) addBlock(x, 0, z, 'grass', true);
         camera.position.set(0, 3, 5);
 
-        // --- 3. MOBILE CONTROLS (JOYSTICK) ---
+        // 3. MOBILE CONTROLS
         let moveX = 0, moveZ = 0;
         const joyBase = document.getElementById('joyBase');
         const joyStick = document.getElementById('joyStick');
@@ -80,47 +95,78 @@
         joyBase.addEventListener('touchmove', (e) => {
             const touch = e.touches[0];
             const rect = joyBase.getBoundingClientRect();
-            const centerX = rect.left + 60, centerY = rect.top + 60;
+            const centerX = rect.left + 50, centerY = rect.top + 50;
             let dx = touch.clientX - centerX, dy = touch.clientY - centerY;
-            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
+            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 40);
             const angle = Math.atan2(dy, dx);
-            
             joyStick.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-            moveX = (Math.cos(angle) * dist) / 50;
-            moveZ = (Math.sin(angle) * dist) / 50;
-        });
+            moveX = (Math.cos(angle) * dist) / 40;
+            moveZ = (Math.sin(angle) * dist) / 40;
+        }, {passive: false});
 
         joyBase.addEventListener('touchend', () => {
             joyStick.style.transform = 'translate(0,0)';
             moveX = 0; moveZ = 0;
         });
 
-        // Touch to Look
         let lastX, lastY;
         window.addEventListener('touchmove', (e) => {
-            if(e.target.closest('.joystick-base') || e.target.tagName === 'BUTTON') return;
+            if(e.target.closest('.joystick-base') || e.target.closest('button') || e.target.closest('#chat-container')) return;
             const t = e.touches[0];
             if(lastX) {
-                camera.rotation.y -= (t.clientX - lastX) * 0.005;
-                camera.rotation.x -= (t.clientY - lastY) * 0.005;
+                camera.rotation.y -= (t.clientX - lastX) * 0.007;
+                camera.rotation.x -= (t.clientY - lastY) * 0.007;
+                camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
             }
             lastX = t.clientX; lastY = t.clientY;
-        });
+        }, {passive: false});
         window.addEventListener('touchend', () => { lastX = null; });
 
-        function jump() { if(camera.position.y <= 1.7) velocityY = 0.25; }
-
+        function jump() { if(camera.position.y <= 1.65) velocityY = 0.22; }
         function placeBlock() {
             const dir = new THREE.Vector3();
             camera.getWorldDirection(dir);
             const pos = camera.position.clone().add(dir.multiplyScalar(3));
             addBlock(pos.x, pos.y, pos.z, 'dirt');
-            if(conn) conn.send({type: 'build', x: pos.x, y: pos.y, z: pos.z});
         }
 
-        // --- 4. MULTIPLAYER ---
-        let peer, conn;
-        const username = localStorage.getItem('suscraft_username') || "Player" + Math.floor(Math.random()*999);
+        // 4. CHAT SYSTEM
+        const chatInput = document.getElementById('chat-input');
+        const chatLogs = document.getElementById('chat-logs');
+        const username = localStorage.getItem('suscraft_username') || "Noob" + Math.floor(Math.random()*99);
+
+        function addLog(name, msg, color="text-white") {
+            const d = document.createElement('div');
+            d.innerHTML = `<span class="${color} font-bold">${name}:</span> ${msg}`;
+            chatLogs.appendChild(d);
+            chatLogs.scrollTop = chatLogs.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const m = chatInput.value.trim();
+            if(!m) return;
+            addLog("You", m, "text-blue-400");
+            if(conn && conn.open) conn.send({type: 'chat', name: username, msg: m});
+            chatInput.value = "";
+        }
+
+        // 5. MULTIPLAYER (PEERJS)
+        let peer, conn, remotes = {};
+
+        function setupConn() {
+            conn.on('open', () => addLog("System", "Connected!", "text-green-500"));
+            conn.on('data', d => {
+                if(d.type === 'move') {
+                    if(!remotes[d.id]) {
+                        remotes[d.id] = new THREE.Mesh(geometry, mats.player);
+                        scene.add(remotes[d.id]);
+                    }
+                    remotes[d.id].position.set(d.x, d.y, d.z);
+                }
+                if(d.type === 'build') addBlock(d.x, d.y, d.z, 'dirt', true);
+                if(d.type === 'chat') addLog(d.name, d.msg, "text-yellow-400");
+            });
+        }
 
         function hostWorld() {
             peer = new Peer(username.toLowerCase().replace(/\s/g, '-'));
@@ -130,42 +176,38 @@
 
         function joinWorld() {
             const id = prompt("Room ID:");
+            if(!id) return;
             peer = new Peer();
-            peer.on('open', () => { conn = peer.connect(id); setupConn(); });
+            peer.on('open', () => { conn = peer.connect(id.toLowerCase()); setupConn(); });
         }
 
-        const remotes = {};
-        function setupConn() {
-            conn.on('data', d => {
-                if(d.type === 'move') {
-                    if(!remotes[d.id]) {
-                        remotes[d.id] = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({color: 0xff0000}));
-                        scene.add(remotes[d.id]);
-                    }
-                    remotes[d.id].position.set(d.x, d.y, d.z);
-                }
-                if(d.type === 'build') addBlock(d.x, d.y, d.z, 'dirt');
-            });
-        }
-
-        // --- 5. LOOP ---
+        // 6. GAME LOOP
         function animate() {
             requestAnimationFrame(animate);
             
-            // Physics
+            // Gravity Physics
             velocityY += gravity;
             camera.position.y += velocityY;
             if(camera.position.y < 1.6) { camera.position.y = 1.6; velocityY = 0; }
 
-            // Movement
-            camera.translateZ(moveZ * 0.15);
-            camera.translateX(moveX * 0.15);
+            // Movement Logic
+            camera.translateZ(moveZ * 0.12);
+            camera.translateX(moveX * 0.12);
 
-            if(conn && conn.open) conn.send({type: 'move', id: username, x: camera.position.x, y: camera.position.y, z: camera.position.z});
+            // Sync Data
+            if(conn && conn.open) {
+                conn.send({type: 'move', id: username, x: camera.position.x, y: camera.position.y, z: camera.position.z});
+            }
 
             renderer.render(scene, camera);
         }
         animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
