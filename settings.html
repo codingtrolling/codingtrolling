@@ -47,17 +47,52 @@
                 </div>
             </div>
 
-            <div id="tab-privacy" class="tab-content">
-                <h2 class="text-3xl font-black mb-6">Privacy & Safety</h2>
-                <p class="text-slate-400 italic">Manage how your data is tracked within the codingtrolling ecosystem.</p>
+   <div id="tab-privacy" class="tab-content">
+    <h2 class="text-3xl font-black mb-6">Privacy & Safety</h2>
+    <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-8">
+        <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-2xl">
+            <div>
+                <h4 class="font-bold">Activity Status</h4>
+                <p class="text-xs text-slate-500">Show others when you are playing SusCraft.</p>
             </div>
+            <input type="checkbox" id="privacy-activity" onchange="updatePrivacy()" class="w-6 h-6 accent-blue-600">
+        </div>
+        
+        <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-2xl">
+            <div>
+                <h4 class="font-bold">Data Analytics</h4>
+                <p class="text-xs text-slate-500">Help improve codingtrolling by sharing anonymous usage data.</p>
+            </div>
+            <input type="checkbox" id="privacy-data" onchange="updatePrivacy()" class="w-6 h-6 accent-blue-600">
+        </div>
+    </div>
+</div>
 
-            <div id="tab-parental" class="tab-content">
-                <h2 class="text-3xl font-black mb-6">Control Parental</h2>
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-                    <p class="text-sm text-slate-400">Restriction mode is currently: <span class="text-green-500 font-bold uppercase">Off</span></p>
+<div id="tab-parental" class="tab-content">
+    <h2 class="text-3xl font-black mb-6">Parental Controls</h2>
+    <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
+        <div id="parental-locked" class="space-y-6">
+            <p class="text-slate-400 text-sm mb-4">Set a 4-digit PIN to restrict access to settings and games.</p>
+            <div class="flex gap-4">
+                <input type="password" id="parental-pin" maxlength="4" placeholder="0000" 
+                    class="bg-slate-800 border border-slate-700 p-3 rounded-xl w-32 text-center text-2xl tracking-widest focus:border-blue-500 outline-none">
+                <button onclick="setParentalPin()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded-xl font-bold">Lock</button>
+            </div>
+        </div>
+
+        <div id="parental-active" class="hidden space-y-6">
+            <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-2xl flex items-center gap-4">
+                <span class="text-blue-500 text-2xl">🔒</span>
+                <div>
+                    <h4 class="font-bold text-blue-400 text-sm">RESTRICTION MODE ACTIVE</h4>
+                    <p class="text-[10px] text-slate-400 italic">Settings are locked. Enter PIN to disable.</p>
                 </div>
             </div>
+            <button onclick="unlockParental()" class="text-red-400 text-xs font-bold hover:underline">Remove Restriction</button>
+        </div>
+    </div>
+</div>
+
 
             <div id="tab-delete" class="tab-content">
                 <h2 class="text-3xl font-black text-red-500 mb-6">Danger Zone</h2>
