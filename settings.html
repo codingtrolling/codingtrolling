@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings // codingtrolling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0b0f1a; color: #f8fafc; }
+        .sidebar-item { transition: all 0.2s; cursor: pointer; }
+        .sidebar-item.active { background: #1e293b; border-left: 4px solid #3b82f6; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="flex min-h-screen">
+        <aside class="w-64 bg-slate-900 border-r border-slate-800 p-6">
+            <h1 class="text-xl font-black mb-10 uppercase italic">Control <span class="text-blue-500">Panel</span></h1>
+            <nav class="space-y-2">
+                <div onclick="showTab('profile')" id="btn-profile" class="sidebar-item active p-3 rounded-lg text-sm font-bold text-slate-400 hover:text-white">Profile Edit</div>
+                <div onclick="showTab('privacy')" id="btn-privacy" class="sidebar-item p-3 rounded-lg text-sm font-bold text-slate-400 hover:text-white">Privacy & Safety</div>
+                <div onclick="showTab('parental')" id="btn-parental" class="sidebar-item p-3 rounded-lg text-sm font-bold text-slate-400 hover:text-white">Control Parental</div>
+                <div onclick="showTab('delete')" id="btn-delete" class="sidebar-item p-3 rounded-lg text-sm font-bold text-red-400 hover:bg-red-500/10">Delete Account</div>
+            </nav>
+            <div class="mt-20 border-t border-slate-800 pt-6">
+                <a href="index.html" class="text-xs font-bold text-slate-500 hover:text-blue-400 tracking-widest uppercase">← Back to Hub</a>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-12 max-w-4xl">
+            <div id="tab-profile" class="tab-content active animate-in fade-in duration-300">
+                <h2 class="text-3xl font-black mb-6">Profile Edit</h2>
+                <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-6">
+                    <div class="flex items-center gap-6 mb-8">
+                        <img id="user-avatar" src="" class="w-20 h-20 rounded-full border-4 border-blue-600 shadow-lg shadow-blue-500/20" alt="Profile">
+                        <div>
+                            <p class="text-sm text-slate-500">Google Connected</p>
+                            <h3 id="user-name" class="text-xl font-bold">User Name</h3>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase text-slate-500 mb-2">Display Name</label>
+                        <input id="edit-username" type="text" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <button onclick="saveProfile()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl transition">Save Changes</button>
+                </div>
+            </div>
+
+            <div id="tab-privacy" class="tab-content">
+                <h2 class="text-3xl font-black mb-6">Privacy & Safety</h2>
+                <p class="text-slate-400 italic">Manage how your data is tracked within the codingtrolling ecosystem.</p>
+            </div>
+
+            <div id="tab-parental" class="tab-content">
+                <h2 class="text-3xl font-black mb-6">Control Parental</h2>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
+                    <p class="text-sm text-slate-400">Restriction mode is currently: <span class="text-green-500 font-bold uppercase">Off</span></p>
+                </div>
+            </div>
+
+            <div id="tab-delete" class="tab-content">
+                <h2 class="text-3xl font-black text-red-500 mb-6">Danger Zone</h2>
+                <div class="bg-red-500/5 border border-red-500/20 p-8 rounded-3xl">
+                    <p class="mb-6 text-slate-300">Deleting your account will wipe your local session and clear your SusCraft progress.</p>
+                    <button onclick="deleteAccount()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl transition">Delete everything</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Tab Switcher Logic
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // Load User Data
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem('google_token');
+            if (!token) { window.location.href = "index.html"; return; }
+
+            const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            document.getElementById('user-avatar').src = payload.picture;
+            document.getElementById('user-name').innerText = payload.name;
+            document.getElementById('edit-username').value = localStorage.getItem('suscraft_username') || payload.name;
+        });
+
+        function saveProfile() {
+            localStorage.setItem('suscraft_username', document.getElementById('edit-username').value);
+            alert("Settings saved!");
+        }
+
+        function deleteAccount() {
+            if(confirm("Are you absolutely sure?")) {
+                localStorage.clear();
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>
