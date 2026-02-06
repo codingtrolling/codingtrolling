@@ -179,42 +179,64 @@ function setupConn() {
 }
 
 function hostWorld() {
-    if (peer) peer.destroy(); // Kill old sessions
-    // Force ID to be simple and lowercase
+    if (peer) peer.destroy();
+    
+    // Clean ID: no spaces, no special characters, all lowercase
     const hostId = username.toLowerCase().replace(/[^a-z0-9]/g, ''); 
-    peer = new Peer(hostId);
+    
+    // Use the public PeerJS cloud server with a specific key for stability
+    peer = new Peer(hostId, {
+        debug: 2
+    });
     
     peer.on('open', id => {
         document.getElementById('room-id').innerText = "ID: " + id;
-        addLog("System", "Room Created! ID: " + id, "text-blue-400");
+        addLog("System", "Server Online. Room ID: " + id, "text-blue-400");
     });
 
     peer.on('connection', c => {
+        // If a friend connects, handle it
         conn = c;
         setupConn();
     });
 
     peer.on('error', (err) => {
         if(err.type === 'unavailable-id') {
-            alert("ID already taken! Try changing your username in settings.");
+            addLog("System", "ID taken. Trying auto-suffix...", "text-orange-400");
+            // If the ID is stuck from a previous session, add a random number
+            localStorage.setItem('suscraft_username', username + Math.floor(Math.random()*10));
+            location.reload();
         }
-        console.error(err);
     });
 }
 
 function joinWorld() {
-    const id = prompt("Enter Friend's Room ID (Lowercase):");
+    const id = prompt("Enter Friend's Room ID:");
     if(!id) return;
+    
     if (peer) peer.destroy(); 
+    peer = new Peer(); 
 
-    peer = new Peer(); // Client doesn't need a specific ID
     peer.on('open', () => {
-        const targetId = id.toLowerCase().trim();
-        conn = peer.connect(targetId);
-        setupConn();
-    });
+        const targetId = id.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+        addLog("System", "Searching for " + targetId + "...", "text-slate-400");
+        
+        conn = peer.connect(targetId, {
+            reliable: true
+        });
 
-    peer.on('error', err => alert("Could not find that Room ID."));
+        // Set a timeout: if it doesn't connect in 5 seconds, alert the user
+        const timeout = setTimeout(() => {
+            if (!conn.open) {
+                addLog("System", "Failed to find room. Tell host to click HOST again.", "text-red-500");
+            }
+        }, 5000);
+
+        conn.on('open', () => {
+            clearTimeout(timeout);
+            setupConn();
+        });
+    });
 }
 
         // 6. GAME LOOP
