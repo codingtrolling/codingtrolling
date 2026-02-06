@@ -150,36 +150,72 @@
             chatInput.value = "";
         }
 
-        // 5. MULTIPLAYER (PEERJS)
-        let peer, conn, remotes = {};
+        // --- 5. FIXED MULTIPLAYER LOGIC ---
+let peer, conn, remotes = {};
 
-        function setupConn() {
-            conn.on('open', () => addLog("System", "Connected!", "text-green-500"));
-            conn.on('data', d => {
-                if(d.type === 'move') {
-                    if(!remotes[d.id]) {
-                        remotes[d.id] = new THREE.Mesh(geometry, mats.player);
-                        scene.add(remotes[d.id]);
-                    }
-                    remotes[d.id].position.set(d.x, d.y, d.z);
-                }
-                if(d.type === 'build') addBlock(d.x, d.y, d.z, 'dirt', true);
-                if(d.type === 'chat') addLog(d.name, d.msg, "text-yellow-400");
-            });
-        }
+function setupConn() {
+    conn.on('open', () => {
+        addLog("System", "Successfully connected to " + conn.peer, "text-green-500");
+        // Send a handshake message to confirm
+        conn.send({type: 'chat', name: 'System', msg: username + " has entered the world!"});
+    });
 
-        function hostWorld() {
-            peer = new Peer(username.toLowerCase().replace(/\s/g, '-'));
-            peer.on('open', id => document.getElementById('room-id').innerText = "ID: " + id);
-            peer.on('connection', c => { conn = c; setupConn(); });
+    conn.on('data', d => {
+        if(d.type === 'move') {
+            if(!remotes[d.id]) {
+                // Create a cube for the friend
+                remotes[d.id] = new THREE.Mesh(geometry, mats.player);
+                scene.add(remotes[d.id]);
+            }
+            remotes[d.id].position.set(d.x, d.y, d.z);
         }
+        if(d.type === 'build') addBlock(d.x, d.y, d.z, 'dirt', true);
+        if(d.type === 'chat') addLog(d.name, d.msg, "text-yellow-400");
+    });
 
-        function joinWorld() {
-            const id = prompt("Room ID:");
-            if(!id) return;
-            peer = new Peer();
-            peer.on('open', () => { conn = peer.connect(id.toLowerCase()); setupConn(); });
+    conn.on('error', (err) => {
+        addLog("Error", "Connection failed: " + err, "text-red-500");
+    });
+}
+
+function hostWorld() {
+    if (peer) peer.destroy(); // Kill old sessions
+    // Force ID to be simple and lowercase
+    const hostId = username.toLowerCase().replace(/[^a-z0-9]/g, ''); 
+    peer = new Peer(hostId);
+    
+    peer.on('open', id => {
+        document.getElementById('room-id').innerText = "ID: " + id;
+        addLog("System", "Room Created! ID: " + id, "text-blue-400");
+    });
+
+    peer.on('connection', c => {
+        conn = c;
+        setupConn();
+    });
+
+    peer.on('error', (err) => {
+        if(err.type === 'unavailable-id') {
+            alert("ID already taken! Try changing your username in settings.");
         }
+        console.error(err);
+    });
+}
+
+function joinWorld() {
+    const id = prompt("Enter Friend's Room ID (Lowercase):");
+    if(!id) return;
+    if (peer) peer.destroy(); 
+
+    peer = new Peer(); // Client doesn't need a specific ID
+    peer.on('open', () => {
+        const targetId = id.toLowerCase().trim();
+        conn = peer.connect(targetId);
+        setupConn();
+    });
+
+    peer.on('error', err => alert("Could not find that Room ID."));
+}
 
         // 6. GAME LOOP
         function animate() {
