@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrollNET | Full Social Suite</title>
+    <title>TrollNET // CodingTrolling</title>
     
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
@@ -13,24 +13,26 @@
 
     <style>
         :root {
-            --bg: #050505;
+            --bg: #080808;
             --nav: #121212;
-            --card: #1a1a1a;
+            --card: #181818;
             --primary: #FF4500;
             --accent: #00FF41;
             --text: #ffffff;
+            --text-dim: #a0a0a0;
             --border: #2a2a2a;
         }
 
+        /* --- GLOBAL STYLES --- */
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             margin: 0;
+            padding-bottom: 60px;
             overflow-x: hidden;
         }
 
-        /* --- HEADER & NAVIGATION --- */
         header {
             background: var(--nav);
             height: 60px;
@@ -44,62 +46,46 @@
             z-index: 1000;
         }
 
-        .nav-icons { display: flex; gap: 20px; align-items: center; }
-        .nav-icons i { font-size: 20px; cursor: pointer; position: relative; }
-        .notif-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: red;
-            font-size: 10px;
-            padding: 2px 5px;
-            border-radius: 50%;
-            display: none;
+        .logo { font-size: 22px; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
+
+        .search-container {
+            flex: 1;
+            margin: 0 15px;
+            background: #222;
+            border-radius: 20px;
+            padding: 5px 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container input {
+            background: transparent; border: none; color: white; width: 100%; outline: none; margin-left: 8px;
         }
 
         /* --- LAYOUT --- */
-        .container { display: flex; width: 100%; }
-        
-        main { flex: 1; max-width: 600px; margin: 0 auto; padding: 10px; }
+        .app-container { display: flex; max-width: 1200px; margin: 0 auto; }
 
-        /* --- FRIEND LIST SIDEBAR --- */
-        #sidebar {
-            width: 250px;
+        main { flex: 2; padding: 10px; max-width: 600px; }
+
+        aside {
+            flex: 1;
             background: var(--nav);
-            border-left: 1px solid var(--border);
             height: calc(100vh - 60px);
             position: sticky;
             top: 60px;
+            border-left: 1px solid var(--border);
             padding: 15px;
-            transition: 0.3s;
         }
 
-        @media (max-width: 800px) {
-            #sidebar {
-                position: fixed;
-                right: -250px;
-                z-index: 999;
-            }
-            #sidebar.open { right: 0; }
+        @media (max-width: 900px) {
+            aside { display: none; } /* Sidebar hidden on small phones */
+            .search-container { display: none; }
         }
-
-        .friend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .friend-item:hover { background: var(--card); }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 
         /* --- POST CREATOR --- */
-        .post-creator {
+        .creator-card {
             background: var(--card);
-            border-radius: 12px;
+            border-radius: 15px;
             padding: 15px;
             border: 1px solid var(--border);
             margin-bottom: 20px;
@@ -107,259 +93,322 @@
 
         textarea {
             width: 100%; background: transparent; border: none; color: white;
-            font-size: 16px; resize: none; outline: none;
+            font-size: 16px; resize: none; outline: none; min-height: 60px;
         }
 
-        .btn-post {
-            background: var(--primary); color: white; border: none;
-            padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;
+        .preview-img { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
+
+        .creator-btns {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;
         }
 
-        /* --- CHAT BOX --- */
-        #chat-window {
-            position: fixed;
-            bottom: 0;
-            right: 270px;
-            width: 300px;
-            height: 400px;
+        /* --- POST CARDS --- */
+        .post {
             background: var(--card);
-            border: 1px solid var(--primary);
-            border-radius: 10px 10px 0 0;
-            display: none;
-            flex-direction: column;
-            z-index: 2000;
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease;
         }
 
-        @media (max-width: 600px) {
-            #chat-window { right: 0; width: 100%; height: 50%; }
+        .post-header { display: flex; justify-content: space-between; align-items: center; }
+        .post-user { display: flex; gap: 10px; align-items: center; }
+        .post-user img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--primary); }
+
+        .post-content { margin: 15px 0; font-size: 15px; line-height: 1.5; }
+        .post-media { width: 100%; border-radius: 10px; }
+
+        .post-actions {
+            display: flex; justify-content: space-around;
+            padding-top: 10px; border-top: 1px solid #222; margin-top: 10px;
         }
 
-        .chat-header {
-            padding: 10px;
-            background: var(--primary);
-            display: flex;
-            justify-content: space-between;
+        .action-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; display: flex; gap: 5px; align-items: center; }
+        .action-btn:hover { color: var(--primary); }
+        .action-btn.active { color: var(--primary); }
+
+        /* --- COMMENTS SECTION --- */
+        .comments-list { background: #111; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 13px; }
+        .comment-item { margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 3px; }
+        .comment-item b { color: var(--accent); }
+
+        /* --- FRIEND LIST & CHAT --- */
+        .friend-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-radius: 8px; cursor: pointer;
+        }
+        .friend-row:hover { background: #222; }
+        .online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+        #chat-popup {
+            position: fixed; bottom: 0; right: 20px; width: 300px; height: 350px;
+            background: var(--card); border: 2px solid var(--primary);
+            border-radius: 10px 10px 0 0; display: none; flex-direction: column; z-index: 2000;
         }
 
-        #chat-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; }
-        .msg { margin-bottom: 8px; padding: 5px 10px; border-radius: 5px; background: #333; width: fit-content; }
-        .msg.me { background: var(--primary); margin-left: auto; }
-
-        /* --- UTILS --- */
-        .toast {
-            position: fixed; top: 70px; right: 20px; background: var(--accent);
-            color: black; padding: 10px 20px; border-radius: 5px; display: none; z-index: 3000;
+        /* --- NOTIFICATIONS --- */
+        #toast {
+            position: fixed; top: 70px; right: 20px; background: var(--primary);
+            color: white; padding: 12px 20px; border-radius: 8px; display: none; z-index: 9999;
         }
 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="toast-msg" class="toast"></div>
+    <div id="toast"></div>
 
     <header>
-        <div style="color: var(--primary); font-weight: 900; font-size: 22px;">TrollNET</div>
-        <div class="nav-icons">
-            <i class="fa fa-bell" onclick="showNotifs()"><span id="notif-count" class="notif-badge">0</span></i>
-            <i class="fa fa-users" onclick="toggleSidebar()"></i>
-            <img id="my-pic" src="" style="width:30px; border-radius:50%; border:1px solid white;">
+        <div class="logo">TrollNET</div>
+        <div class="search-container">
+            <i class="fa fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search trolls, posts, or bait..." oninput="handleSearch()">
+        </div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <i class="fa fa-bell" onclick="alert('Notifications checked!')"></i>
+            <img id="myAvatar" src="" style="width:35px; border-radius:50%; display:none;">
         </div>
     </header>
 
-    <div class="container">
+    <div class="app-container">
         <main>
-            <div class="post-creator">
-                <textarea id="post-input" placeholder="What's the tea, Troll?"></textarea>
-                <div style="display:flex; justify-content: space-between; align-items:center; margin-top:10px;">
-                    <input type="file" id="media-input" hidden onchange="previewMedia(event)">
-                    <label for="media-input" style="color:var(--accent); cursor:pointer;"><i class="fa fa-image"></i> 20MB</label>
-                    <button class="btn-post" onclick="sendPost()">Post</button>
+            <div class="creator-card">
+                <textarea id="postInput" placeholder="Drop the bait, Troll..."></textarea>
+                <img id="mediaPreview" class="preview-img">
+                <div class="creator-btns">
+                    <div style="display:flex; gap:15px;">
+                        <label for="fileIn" style="color:var(--accent); cursor:pointer;"><i class="fa fa-image fa-lg"></i></label>
+                        <input type="file" id="fileIn" hidden accept="image/*,video/*" onchange="previewFile(event)">
+                        <i class="fa fa-video" style="color:#888;"></i>
+                    </div>
+                    <button onclick="publishPost()" style="background:var(--primary); color:white; border:none; padding:8px 20px; border-radius:20px; font-weight:bold;">POST</button>
                 </div>
-                <img id="post-preview" style="width:100%; display:none; margin-top:10px; border-radius:8px;">
             </div>
 
-            <div id="feed"></div>
+            <div id="newsFeed">
+                </div>
         </main>
 
         <aside id="sidebar">
-            <h3 style="color:var(--primary); font-size:16px;">ONLINE TROLLS</h3>
-            <div id="friend-list">
-                </div>
+            <h3 style="color:var(--primary); border-bottom:1px solid #333; padding-bottom:10px;">ONLINE TROLLS</h3>
+            <div id="onlineList"></div>
         </aside>
     </div>
 
-    <div id="chat-window">
-        <div class="chat-header">
-            <span id="chat-target-name">Chat</span>
-            <i class="fa fa-times" style="cursor:pointer;" onclick="closeChat()"></i>
+    <div id="chat-popup">
+        <div style="background:var(--primary); padding:10px; display:flex; justify-content:space-between;">
+            <span id="chatTitle">Chat</span>
+            <i class="fa fa-times" onclick="document.getElementById('chat-popup').style.display='none'"></i>
         </div>
-        <div id="chat-messages"></div>
-        <div style="display:flex; padding:10px; border-top:1px solid var(--border);">
-            <input type="text" id="chat-input" style="flex:1; background:transparent; color:white; border:none; outline:none;" placeholder="Type a message...">
-            <i class="fa fa-paper-plane" style="color:var(--primary); cursor:pointer;" onclick="sendPrivateMsg()"></i>
+        <div id="chatMessages" style="flex:1; overflow-y:auto; padding:10px; font-size:14px;"></div>
+        <div style="padding:10px; border-top:1px solid #333; display:flex;">
+            <input type="text" id="chatInput" placeholder="Type..." style="flex:1; background:transparent; border:none; color:white; outline:none;">
+            <i class="fa fa-paper-plane" onclick="sendPrivate()" style="color:var(--primary); cursor:pointer;"></i>
         </div>
     </div>
 
     <script>
         const socket = io("https://suscraft-backend-production.up.railway.app");
         let me = null;
-        let activeChatId = null;
-        let mediaData = null;
+        let allPosts = [];
+        let mediaBase64 = null;
+        let activeChatUser = null;
 
-        // 1. IDENTITY SETUP
+        // 1. IDENTITY & CONNECT
         window.onload = () => {
             let saved = localStorage.getItem('trollUser');
             if (saved) {
                 me = JSON.parse(saved);
             } else {
-                let name = prompt("Enter Troll Name:");
+                let name = prompt("Enter Your Global Troll Name:");
                 me = {
-                    id: "TR_" + Math.floor(Math.random() * 99999),
-                    name: name || "GhostTroll",
-                    pic: "https://api.dicebear.com/7.x/bottts/svg?seed=" + name
+                    id: "ID_" + Math.floor(Math.random() * 99999),
+                    name: name || "Troll_" + Math.floor(Math.random() * 100),
+                    pic: "https://api.dicebear.com/7.x/avataaars/svg?seed=" + name
                 };
                 localStorage.setItem('trollUser', JSON.stringify(me));
             }
-            document.getElementById('my-pic').src = me.pic;
+            document.getElementById('myAvatar').src = me.pic;
+            document.getElementById('myAvatar').style.display = 'block';
             socket.emit('registerUser', me.id);
-            toast("Connected as " + me.name);
+            showToast("Connected as " + me.name);
         };
 
-        // 2. FEED LOGIC
-        function sendPost() {
-            const txt = document.getElementById('post-input').value;
-            if(!txt && !mediaData) return;
-
-            const post = {
-                id: Date.now(),
-                uName: me.name,
-                uPic: me.pic,
-                content: txt,
-                media: mediaData
-            };
-            socket.emit('newTrollPost', post);
-            
-            // Reset
-            document.getElementById('post-input').value = "";
-            document.getElementById('post-preview').style.display = 'none';
-            mediaData = null;
-        }
-
-        socket.on('feedUpdate', (posts) => {
-            const feed = document.getElementById('feed');
-            feed.innerHTML = posts.map(p => `
-                <div style="background:var(--card); padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border);">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                        <img src="${p.uPic}" style="width:35px; border-radius:50%;">
-                        <b>${p.uName}</b>
-                    </div>
-                    <div>${p.content}</div>
-                    ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
-                </div>
-            `).join('');
-        });
-        
-// --- NOTIFICATION SYSTEM ---
-function showNotifs() {
-    const count = document.getElementById('notif-count').innerText;
-    if (count === "0") {
-        alert("No new notifications. Go cause some trouble!");
-    } else {
-        alert("You have " + count + " new messages!");
-        // Reset badge after viewing
-        const b = document.getElementById('notif-count');
-        b.innerText = "0";
-        b.style.display = "none";
-    }
-}
-
-// --- SEARCH ENGINE ---
-function searchPosts() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
-    
-    // Filter the global posts array
-    const filtered = posts.filter(p => 
-        p.content.toLowerCase().includes(query) || 
-        p.uName.toLowerCase().includes(query)
-    );
-    
-    // Use the existing render function to show results
-    renderFeed(filtered); 
-}
-    
-        // 3. FRIEND & CHAT LOGIC
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-
-        socket.on('updateOnlineList', (users) => {
-            const list = document.getElementById('friend-list');
-            list.innerHTML = users.filter(u => u !== me.id).map(uId => `
-                <div class="friend-item" onclick="openChat('${uId}')">
-                    <div class="status-dot"></div>
-                    <span>${uId}</span>
-                </div>
-            `).join('');
-        });
-
-        function openChat(uId) {
-            activeChatId = uId;
-            document.getElementById('chat-target-name').innerText = "Chat with " + uId;
-            document.getElementById('chat-window').style.display = 'flex';
-            document.getElementById('chat-messages').innerHTML = ""; 
-        }
-
-        function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
-
-        function sendPrivateMsg() {
-            const msg = document.getElementById('chat-input').value;
-            if(!msg) return;
-            socket.emit('sendPrivateMessage', {
-                toUserId: activeChatId,
-                fromName: me.name,
-                fromId: me.id,
-                message: msg
-            });
-            addMsgToBox("me", msg);
-            document.getElementById('chat-input').value = "";
-        }
-
-        socket.on('receivePrivateMessage', (data) => {
-            if(activeChatId === data.fromId) {
-                addMsgToBox("them", data.message);
-            }
-            toast("New message from " + data.from);
-            updateNotifBadge(1);
-        });
-
-        // 4. UTILS
-        function previewMedia(e) {
+        // 2. POSTING SYSTEM
+        function previewFile(e) {
             const file = e.target.files[0];
-            if(file.size > 20*1024*1024) return alert("Too large!");
+            if(file.size > 20*1024*1024) return alert("File too large! Max 20MB.");
             const reader = new FileReader();
             reader.onload = () => {
-                mediaData = reader.result;
-                document.getElementById('post-preview').src = mediaData;
-                document.getElementById('post-preview').style.display = 'block';
+                mediaBase64 = reader.result;
+                document.getElementById('mediaPreview').src = mediaBase64;
+                document.getElementById('mediaPreview').style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
 
-        function addMsgToBox(type, text) {
-            const box = document.getElementById('chat-messages');
-            box.innerHTML += `<div class="msg ${type === 'me' ? 'me' : ''}">${text}</div>`;
-            box.scrollTop = box.scrollHeight;
+        function publishPost() {
+            const content = document.getElementById('postInput').value;
+            if(!content && !mediaBase64) return;
+
+            const postObj = {
+                id: Date.now(),
+                uId: me.id,
+                uName: me.name,
+                uPic: me.pic,
+                text: content,
+                media: mediaBase64,
+                likes: 0,
+                likedBy: [],
+                comments: []
+            };
+
+            socket.emit('newTrollPost', postObj);
+            
+            // Clear
+            document.getElementById('postInput').value = "";
+            document.getElementById('mediaPreview').style.display = "none";
+            mediaBase64 = null;
         }
 
-        function toast(m) {
-            const t = document.getElementById('toast-msg');
+        // 3. REAL-TIME UPDATES
+        socket.on('feedUpdate', (data) => {
+            allPosts = data;
+            render(allPosts);
+        });
+
+        function render(posts) {
+            const feed = document.getElementById('newsFeed');
+            feed.innerHTML = posts.map(p => {
+                const isLiked = p.likedBy?.includes(me.id);
+                return `
+                <div class="post">
+                    <div class="post-header">
+                        <div class="post-user">
+                            <img src="${p.uPic}">
+                            <div>
+                                <b>${p.uName}</b><br>
+                                <span style="font-size:10px; color:#888;">Troll ID: ${p.uId}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="sendFriendRequest('${p.uId}')" style="background:none; border:1px solid var(--accent); color:var(--accent); border-radius:15px; font-size:10px; padding:3px 10px;">+ Friend</button>
+                            <button onclick="handleFollow('${p.uId}')" style="background:none; border:1px solid var(--primary); color:var(--primary); border-radius:15px; font-size:10px; padding:3px 10px;">Follow</button>
+                        </div>
+                    </div>
+                    <div class="post-content">${p.text}</div>
+                    ${p.media ? `<img src="${p.media}" class="post-media">` : ''}
+                    
+                    <div class="post-actions">
+                        <button class="action-btn ${isLiked?'active':''}" onclick="likePost(${p.id})">
+                            <i class="fa fa-heart"></i> ${p.likes || 0}
+                        </button>
+                        <button class="action-btn" onclick="addComment(${p.id})">
+                            <i class="fa fa-comment"></i> ${p.comments?.length || 0}
+                        </button>
+                        <button class="action-btn" onclick="sharePost(${p.id})">
+                            <i class="fa fa-share"></i> Share
+                        </button>
+                        <button class="action-btn" style="color:#ff3333" onclick="reportPost('${p.uName}', ${p.id})">
+                            <i class="fa fa-flag"></i>
+                        </button>
+                    </div>
+
+                    ${p.comments?.length > 0 ? `
+                        <div class="comments-list">
+                            ${p.comments.map(c => `<div class="comment-item"><b>${c.user}:</b> ${c.text}</div>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        // 4. SOCIAL ACTIONS
+        function likePost(pid) { socket.emit('likePost', { pid: pid, uid: me.id }); }
+        
+        function addComment(pid) {
+            const txt = prompt("Write your comment:");
+            if(txt) socket.emit('newComment', { pid: pid, user: me.name, text: txt });
+        }
+
+        function handleFollow(targetId) {
+            showToast("Following " + targetId);
+            socket.emit('followUser', { target: targetId, follower: me.id });
+        }
+
+        function sharePost(pid) {
+            navigator.clipboard.writeText("https://trollnet.com/p/" + pid);
+            showToast("Link Copied!");
+        }
+
+        function reportPost(name, pid) {
+            const reason = prompt("Report " + name + " for:");
+            if(reason) {
+                socket.emit('reportSubmit', { violator: name, reason: reason, postId: pid });
+                alert("Report sent to rabi65171@gmail.com. User will be investigated.");
+            }
+        }
+
+        // 5. FRIEND REQUEST & CHAT
+        function sendFriendRequest(targetId) {
+            if(targetId === me.id) return alert("You can't friend yourself, troll!");
+            socket.emit('friendRequest', { from: me.id, fromName: me.name, to: targetId });
+            showToast("Request Sent to " + targetId);
+        }
+
+        socket.on('receiveFriendRequest', (data) => {
+            if(confirm(`Accept Friend Request from ${data.fromName}?`)) {
+                socket.emit('acceptFriend', { u1: me.id, u2: data.from });
+                showToast("New Friend Added!");
+            }
+        });
+
+        socket.on('updateOnlineList', (list) => {
+            const div = document.getElementById('onlineList');
+            div.innerHTML = list.filter(id => id !== me.id).map(id => `
+                <div class="friend-row" onclick="startChat('${id}')">
+                    <span>${id}</span>
+                    <div class="online-dot"></div>
+                </div>
+            `).join('');
+        });
+
+        function startChat(id) {
+            activeChatUser = id;
+            document.getElementById('chatTitle').innerText = "Chat with " + id;
+            document.getElementById('chat-popup').style.display = 'flex';
+            document.getElementById('chatMessages').innerHTML = "";
+        }
+
+        function sendPrivate() {
+            const msg = document.getElementById('chatInput').value;
+            if(!msg) return;
+            socket.emit('sendPrivateMessage', { to: activeChatUser, from: me.id, fromName: me.name, msg: msg });
+            document.getElementById('chatMessages').innerHTML += `<div><b>Me:</b> ${msg}</div>`;
+            document.getElementById('chatInput').value = "";
+        }
+
+        socket.on('receivePrivateMessage', (data) => {
+            showToast("New DM from " + data.fromName);
+            if(activeChatUser === data.from) {
+                document.getElementById('chatMessages').innerHTML += `<div><b>${data.fromName}:</b> ${data.msg}</div>`;
+            }
+        });
+
+        // 6. UTILS
+        function handleSearch() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allPosts.filter(p => p.text.toLowerCase().includes(q) || p.uName.toLowerCase().includes(q));
+            render(filtered);
+        }
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
             t.innerText = m; t.style.display = 'block';
             setTimeout(() => t.style.display = 'none', 3000);
-        }
-
-        function updateNotifBadge(n) {
-            const b = document.getElementById('notif-count');
-            let count = parseInt(b.innerText) + n;
-            b.innerText = count;
-            b.style.display = count > 0 ? 'block' : 'none';
         }
     </script>
 </body>
