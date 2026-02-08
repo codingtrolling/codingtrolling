@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrollNET | Advanced Simulator</title>
+    <title>TrollNET | Full Social Suite</title>
     
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* --- CSS DESIGN SYSTEM --- */
         :root {
             --bg: #050505;
             --nav: #121212;
@@ -28,10 +27,10 @@
             color: var(--text);
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding-bottom: 70px;
+            overflow-x: hidden;
         }
 
-        /* Fixed Top Nav */
+        /* --- HEADER & NAVIGATION --- */
         header {
             background: var(--nav);
             height: 60px;
@@ -45,335 +44,294 @@
             z-index: 1000;
         }
 
-        .search-bar {
-            background: #222;
-            border-radius: 20px;
-            padding: 5px 15px;
-            display: flex;
-            align-items: center;
-            width: 50%;
-        }
-
-        .search-bar input {
-            background: transparent;
-            border: none;
-            color: white;
-            padding: 5px;
-            width: 100%;
-            outline: none;
-        }
-
-        /* Stories Bar */
-        .stories {
-            display: flex;
-            gap: 12px;
-            padding: 15px;
-            overflow-x: auto;
-            background: var(--bg);
-        }
-
-        .story {
-            min-width: 60px;
-            height: 60px;
+        .nav-icons { display: flex; gap: 20px; align-items: center; }
+        .nav-icons i { font-size: 20px; cursor: pointer; position: relative; }
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            font-size: 10px;
+            padding: 2px 5px;
             border-radius: 50%;
-            border: 2px solid var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            display: none;
         }
 
-        .story img { width: 50px; height: 50px; border-radius: 50%; }
+        /* --- LAYOUT --- */
+        .container { display: flex; width: 100%; }
+        
+        main { flex: 1; max-width: 600px; margin: 0 auto; padding: 10px; }
 
-        /* Post Creation Window */
+        /* --- FRIEND LIST SIDEBAR --- */
+        #sidebar {
+            width: 250px;
+            background: var(--nav);
+            border-left: 1px solid var(--border);
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+            padding: 15px;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 800px) {
+            #sidebar {
+                position: fixed;
+                right: -250px;
+                z-index: 999;
+            }
+            #sidebar.open { right: 0; }
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .friend-item:hover { background: var(--card); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+        /* --- POST CREATOR --- */
         .post-creator {
             background: var(--card);
-            margin: 10px;
             border-radius: 12px;
             padding: 15px;
             border: 1px solid var(--border);
+            margin-bottom: 20px;
         }
 
         textarea {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 16px;
-            resize: none;
-            outline: none;
-            margin-bottom: 10px;
+            width: 100%; background: transparent; border: none; color: white;
+            font-size: 16px; resize: none; outline: none;
         }
-
-        .preview-box {
-            width: 100%;
-            max-height: 250px;
-            border-radius: 8px;
-            display: none;
-            margin-bottom: 10px;
-            object-fit: cover;
-        }
-
-        .tool-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border);
-            padding-top: 10px;
-        }
-
-        .file-label { color: var(--accent); font-size: 20px; cursor: pointer; }
 
         .btn-post {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: bold;
+            background: var(--primary); color: white; border: none;
+            padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;
         }
 
-        /* Posts Feed */
-        .feed { padding: 10px; }
-
-        .post-card {
+        /* --- CHAT BOX --- */
+        #chat-window {
+            position: fixed;
+            bottom: 0;
+            right: 270px;
+            width: 300px;
+            height: 400px;
             background: var(--card);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--primary);
+            border-radius: 10px 10px 0 0;
+            display: none;
+            flex-direction: column;
+            z-index: 2000;
         }
 
-        .post-header {
+        @media (max-width: 600px) {
+            #chat-window { right: 0; width: 100%; height: 50%; }
+        }
+
+        .chat-header {
+            padding: 10px;
+            background: var(--primary);
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
         }
 
-        .user-block { display: flex; gap: 10px; align-items: center; }
-        .user-block img { width: 40px; height: 40px; border-radius: 50%; }
-        .user-name { font-weight: bold; font-size: 14px; }
+        #chat-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; }
+        .msg { margin-bottom: 8px; padding: 5px 10px; border-radius: 5px; background: #333; width: fit-content; }
+        .msg.me { background: var(--primary); margin-left: auto; }
 
-        .sub-btn {
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 11px;
-            text-transform: uppercase;
+        /* --- UTILS --- */
+        .toast {
+            position: fixed; top: 70px; right: 20px; background: var(--accent);
+            color: black; padding: 10px 20px; border-radius: 5px; display: none; z-index: 3000;
         }
 
-        .sub-btn.active { background: var(--primary); color: white; }
-
-        .post-content { font-size: 15px; line-height: 1.4; margin-bottom: 10px; }
-
-        .post-img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
-
-        /* Actions Bar */
-        .actions {
-            display: flex;
-            justify-content: space-around;
-            border-top: 1px solid var(--border);
-            padding-top: 10px;
-        }
-
-        .act { display: flex; align-items: center; gap: 5px; color: #888; font-size: 13px; cursor: pointer; }
-        .act.liked { color: var(--primary); }
-
-        /* Notification */
-        #notify {
-            position: fixed;
-            top: 70px;
-            right: 10px;
-            background: var(--primary);
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: none;
-            z-index: 10000;
-        }
     </style>
 </head>
 <body>
 
-    <div id="notify">Notification!</div>
+    <div id="toast-msg" class="toast"></div>
 
     <header>
-        <div style="color: var(--primary); font-weight: 900; font-size: 20px;">TrollNET</div>
-        <div class="search-bar">
-            <i class="fa fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Search..." oninput="searchPosts()">
-        </div>
-        <div id="profileBtn">
-            <img id="userImg" src="" style="width: 35px; border-radius: 50%; display: none;">
+        <div style="color: var(--primary); font-weight: 900; font-size: 22px;">TrollNET</div>
+        <div class="nav-icons">
+            <i class="fa fa-bell" onclick="showNotifs()"><span id="notif-count" class="notif-badge">0</span></i>
+            <i class="fa fa-users" onclick="toggleSidebar()"></i>
+            <img id="my-pic" src="" style="width:30px; border-radius:50%; border:1px solid white;">
         </div>
     </header>
 
-    <div class="stories" id="storyList">
-        <div class="story"><div style="font-size: 30px;">+</div></div>
+    <div class="container">
+        <main>
+            <div class="post-creator">
+                <textarea id="post-input" placeholder="What's the tea, Troll?"></textarea>
+                <div style="display:flex; justify-content: space-between; align-items:center; margin-top:10px;">
+                    <input type="file" id="media-input" hidden onchange="previewMedia(event)">
+                    <label for="media-input" style="color:var(--accent); cursor:pointer;"><i class="fa fa-image"></i> 20MB</label>
+                    <button class="btn-post" onclick="sendPost()">Post</button>
+                </div>
+                <img id="post-preview" style="width:100%; display:none; margin-top:10px; border-radius:8px;">
+            </div>
+
+            <div id="feed"></div>
+        </main>
+
+        <aside id="sidebar">
+            <h3 style="color:var(--primary); font-size:16px;">ONLINE TROLLS</h3>
+            <div id="friend-list">
+                </div>
+        </aside>
     </div>
 
-    <div class="post-creator">
-        <textarea id="postText" placeholder="Start a controversy..."></textarea>
-        <img id="mediaPreview" class="preview-box">
-        <div class="tool-row">
-            <label for="fileUp" class="file-label"><i class="fa fa-camera"></i></label>
-            <input type="file" id="fileUp" hidden accept="image/*,video/*" onchange="handleFile(event)">
-            <button class="btn-post" onclick="createPost()">POST</button>
+    <div id="chat-window">
+        <div class="chat-header">
+            <span id="chat-target-name">Chat</span>
+            <i class="fa fa-times" style="cursor:pointer;" onclick="closeChat()"></i>
+        </div>
+        <div id="chat-messages"></div>
+        <div style="display:flex; padding:10px; border-top:1px solid var(--border);">
+            <input type="text" id="chat-input" style="flex:1; background:transparent; color:white; border:none; outline:none;" placeholder="Type a message...">
+            <i class="fa fa-paper-plane" style="color:var(--primary); cursor:pointer;" onclick="sendPrivateMsg()"></i>
         </div>
     </div>
-
-    <div class="feed" id="mainFeed">
-        </div>
 
     <script>
-        /* --- JAVASCRIPT LOGIC --- */
-
         const socket = io("https://suscraft-backend-production.up.railway.app");
-        let user = null;
-        let posts = [];
-        let subs = new Set();
+        let me = null;
+        let activeChatId = null;
+        let mediaData = null;
 
-        // 1. SIMULATED LOGIN
+        // 1. IDENTITY SETUP
         window.onload = () => {
             let saved = localStorage.getItem('trollUser');
             if (saved) {
-                user = JSON.parse(saved);
+                me = JSON.parse(saved);
             } else {
-                let name = prompt("Enter your Troll Name:");
-                user = {
-                    id: "TR_" + Math.floor(Math.random() * 9999),
-                    name: name || "Troll_" + Math.floor(Math.random() * 100),
-                    pic: "https://api.dicebear.com/7.x/pixel-art/svg?seed=" + (name || "anon")
+                let name = prompt("Enter Troll Name:");
+                me = {
+                    id: "TR_" + Math.floor(Math.random() * 99999),
+                    name: name || "GhostTroll",
+                    pic: "https://api.dicebear.com/7.x/bottts/svg?seed=" + name
                 };
-                localStorage.setItem('trollUser', JSON.stringify(user));
+                localStorage.setItem('trollUser', JSON.stringify(me));
             }
-            document.getElementById('userImg').src = user.pic;
-            document.getElementById('userImg').style.display = 'block';
-            toast("Logon Successful as " + user.name);
+            document.getElementById('my-pic').src = me.pic;
+            socket.emit('registerUser', me.id);
+            toast("Connected as " + me.name);
         };
 
-        // 2. FILE HANDLING (20MB Limit)
-        let mediaData = null;
-        function handleFile(e) {
-            const file = e.target.files[0];
-            if (file.size > 20 * 1024 * 1024) {
-                alert("File too big! (Max 20MB)");
-                return;
+        // 2. FEED LOGIC
+        function sendPost() {
+            const txt = document.getElementById('post-input').value;
+            if(!txt && !mediaData) return;
+
+            const post = {
+                id: Date.now(),
+                uName: me.name,
+                uPic: me.pic,
+                content: txt,
+                media: mediaData
+            };
+            socket.emit('newTrollPost', post);
+            
+            // Reset
+            document.getElementById('post-input').value = "";
+            document.getElementById('post-preview').style.display = 'none';
+            mediaData = null;
+        }
+
+        socket.on('feedUpdate', (posts) => {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = posts.map(p => `
+                <div style="background:var(--card); padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid var(--border);">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <img src="${p.uPic}" style="width:35px; border-radius:50%;">
+                        <b>${p.uName}</b>
+                    </div>
+                    <div>${p.content}</div>
+                    ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
+                </div>
+            `).join('');
+        });
+
+        // 3. FRIEND & CHAT LOGIC
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        socket.on('updateOnlineList', (users) => {
+            const list = document.getElementById('friend-list');
+            list.innerHTML = users.filter(u => u !== me.id).map(uId => `
+                <div class="friend-item" onclick="openChat('${uId}')">
+                    <div class="status-dot"></div>
+                    <span>${uId}</span>
+                </div>
+            `).join('');
+        });
+
+        function openChat(uId) {
+            activeChatId = uId;
+            document.getElementById('chat-target-name').innerText = "Chat with " + uId;
+            document.getElementById('chat-window').style.display = 'flex';
+            document.getElementById('chat-messages').innerHTML = ""; 
+        }
+
+        function closeChat() { document.getElementById('chat-window').style.display = 'none'; }
+
+        function sendPrivateMsg() {
+            const msg = document.getElementById('chat-input').value;
+            if(!msg) return;
+            socket.emit('sendPrivateMessage', {
+                toUserId: activeChatId,
+                fromName: me.name,
+                fromId: me.id,
+                message: msg
+            });
+            addMsgToBox("me", msg);
+            document.getElementById('chat-input').value = "";
+        }
+
+        socket.on('receivePrivateMessage', (data) => {
+            if(activeChatId === data.fromId) {
+                addMsgToBox("them", data.message);
             }
+            toast("New message from " + data.from);
+            updateNotifBadge(1);
+        });
+
+        // 4. UTILS
+        function previewMedia(e) {
+            const file = e.target.files[0];
+            if(file.size > 20*1024*1024) return alert("Too large!");
             const reader = new FileReader();
             reader.onload = () => {
                 mediaData = reader.result;
-                const prev = document.getElementById('mediaPreview');
-                prev.src = mediaData;
-                prev.style.display = 'block';
+                document.getElementById('post-preview').src = mediaData;
+                document.getElementById('post-preview').style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
 
-        // 3. CREATE POST
-        function createPost() {
-            const txt = document.getElementById('postText').value;
-            if (!txt && !mediaData) return;
-
-            const newPost = {
-                id: Date.now(),
-                uid: user.id,
-                uName: user.name,
-                uPic: user.pic,
-                content: txt,
-                media: mediaData,
-                likes: 0,
-                likedBy: []
-            };
-
-            // Send to Railway
-            socket.emit('newTrollPost', newPost);
-
-            // Instant feedback for simulator feel
-            document.getElementById('postText').value = "";
-            document.getElementById('mediaPreview').style.display = 'none';
-            mediaData = null;
-            toast("Post Published!");
+        function addMsgToBox(type, text) {
+            const box = document.getElementById('chat-messages');
+            box.innerHTML += `<div class="msg ${type === 'me' ? 'me' : ''}">${text}</div>`;
+            box.scrollTop = box.scrollHeight;
         }
 
-        // 4. REAL-TIME RECEIVE
-        socket.on('feedUpdate', (data) => {
-            posts = data;
-            render(posts);
-        });
-
-        // 5. RENDER SYSTEM
-        function render(dataList) {
-            const feed = document.getElementById('mainFeed');
-            feed.innerHTML = "";
-            dataList.forEach(p => {
-                const isSub = subs.has(p.uid);
-                const isLiked = p.likedBy?.includes(user.id);
-                
-                feed.innerHTML += `
-                    <div class="post-card">
-                        <div class="post-header">
-                            <div class="user-block">
-                                <img src="${p.uPic}">
-                                <div class="user-name">${p.uName}</div>
-                            </div>
-                            <div class="sub-btn ${isSub ? 'active' : ''}" onclick="toggleSub('${p.uid}')">
-                                ${isSub ? 'Unsubscribe' : 'Subscribe'}
-                            </div>
-                        </div>
-                        <div class="post-content">${p.content}</div>
-                        ${p.media ? `<img src="${p.media}" class="post-img">` : ''}
-                        <div class="actions">
-                            <div class="act ${isLiked ? 'liked' : ''}" onclick="like(${p.id})">
-                                <i class="fa fa-heart"></i> ${p.likes}
-                            </div>
-                            <div class="act"><i class="fa fa-comment"></i> Comment</div>
-                            <div class="act" onclick="share(${p.id})"><i class="fa fa-share"></i> Share</div>
-                            <div class="act" style="color:red" onclick="report('${p.uName}')"><i class="fa fa-flag"></i></div>
-                        </div>
-                    </div>
-                `;
-            });
+        function toast(m) {
+            const t = document.getElementById('toast-msg');
+            t.innerText = m; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
         }
 
-        // 6. ACTION FUNCTIONS
-        function toggleSub(uid) {
-            if (subs.has(uid)) subs.delete(uid);
-            else subs.add(uid);
-            render(posts);
-            toast("Subscription Updated");
-        }
-
-        function like(pid) {
-            socket.emit('likePost', { pid: pid, uid: user.id });
-            toast("You liked a post");
-        }
-
-        function share(pid) {
-            navigator.clipboard.writeText("https://trollnet-simulator.com/p/" + pid);
-            toast("Link Copied!");
-        }
-
-        function report(name) {
-            let reason = prompt("Report " + name + " for:");
-            if(reason) {
-                socket.emit('reportSubmit', { violator: name, reason: reason, email: 'rabi65171@gmail.com' });
-                alert("Report sent to rabi65171@gmail.com. User will be investigated for ban.");
-            }
-        }
-
-        function searchPosts() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = posts.filter(p => p.content.toLowerCase().includes(q) || p.uName.toLowerCase().includes(q));
-            render(filtered);
-        }
-
-        function toast(msg) {
-            const box = document.getElementById('notify');
-            box.innerText = msg;
-            box.style.display = 'block';
-            setTimeout(() => { box.style.display = 'none'; }, 2000);
+        function updateNotifBadge(n) {
+            const b = document.getElementById('notif-count');
+            let count = parseInt(b.innerText) + n;
+            b.innerText = count;
+            b.style.display = count > 0 ? 'block' : 'none';
         }
     </script>
 </body>
