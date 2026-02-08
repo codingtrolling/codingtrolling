@@ -258,7 +258,35 @@
                 </div>
             `).join('');
         });
+        
+// --- NOTIFICATION SYSTEM ---
+function showNotifs() {
+    const count = document.getElementById('notif-count').innerText;
+    if (count === "0") {
+        alert("No new notifications. Go cause some trouble!");
+    } else {
+        alert("You have " + count + " new messages!");
+        // Reset badge after viewing
+        const b = document.getElementById('notif-count');
+        b.innerText = "0";
+        b.style.display = "none";
+    }
+}
 
+// --- SEARCH ENGINE ---
+function searchPosts() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    
+    // Filter the global posts array
+    const filtered = posts.filter(p => 
+        p.content.toLowerCase().includes(query) || 
+        p.uName.toLowerCase().includes(query)
+    );
+    
+    // Use the existing render function to show results
+    renderFeed(filtered); 
+}
+    
         // 3. FRIEND & CHAT LOGIC
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
