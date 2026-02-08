@@ -2,130 +2,96 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrollNET | Advanced Social Architecture</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TrollNET | Advanced Simulator</title>
     
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>eruda.init();</script>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* --- CSS THEME & DESIGN (LINE 15-150) --- */
+        /* --- CSS DESIGN SYSTEM --- */
         :root {
-            --bg-body: #080808;
-            --bg-nav: #121212;
-            --bg-card: #181818;
+            --bg: #050505;
+            --nav: #121212;
+            --card: #1a1a1a;
             --primary: #FF4500;
-            --secondary: #00FF41;
-            --text-main: #FFFFFF;
-            --text-dim: #A0A0A0;
-            --border: #2A2A2A;
-            --glass: rgba(255, 255, 255, 0.05);
+            --accent: #00FF41;
+            --text: #ffffff;
+            --border: #2a2a2a;
         }
 
         body {
-            background: var(--bg-body);
-            color: var(--text-main);
-            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding-top: 70px;
-            overflow-x: hidden;
+            padding-bottom: 70px;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-body); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 65px;
-            background: var(--bg-nav);
-            border-bottom: 1px solid var(--border);
+        /* Fixed Top Nav */
+        header {
+            background: var(--nav);
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 5%;
-            box-sizing: border-box;
+            padding: 0 15px;
+            border-bottom: 2px solid var(--primary);
+            position: sticky;
+            top: 0;
             z-index: 1000;
         }
 
-        .search-box {
-            background: #202020;
+        .search-bar {
+            background: #222;
             border-radius: 20px;
-            padding: 8px 15px;
+            padding: 5px 15px;
             display: flex;
             align-items: center;
-            width: 30%;
+            width: 50%;
         }
 
-        .search-box input {
+        .search-bar input {
             background: transparent;
             border: none;
             color: white;
-            margin-left: 10px;
+            padding: 5px;
             width: 100%;
             outline: none;
         }
 
-        /* Stories */
-        .stories-container {
+        /* Stories Bar */
+        .stories {
             display: flex;
-            gap: 15px;
-            padding: 20px;
+            gap: 12px;
+            padding: 15px;
             overflow-x: auto;
-            scrollbar-width: none;
-            max-width: 800px;
-            margin: 0 auto;
+            background: var(--bg);
         }
 
-        .story-circle {
-            min-width: 65px;
-            height: 65px;
+        .story {
+            min-width: 60px;
+            height: 60px;
             border-radius: 50%;
             border: 2px solid var(--primary);
-            padding: 3px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .story-circle img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        /* Feed & Post Creation */
-        .main-layout {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 10px;
-        }
-
-        .create-post-window {
-            background: var(--bg-card);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid var(--border);
-            margin-bottom: 25px;
-        }
-
-        .post-input-area {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
 
-        .user-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: #333;
+        .story img { width: 50px; height: 50px; border-radius: 50%; }
+
+        /* Post Creation Window */
+        .post-creator {
+            background: var(--card);
+            margin: 10px;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--border);
         }
 
         textarea {
@@ -133,346 +99,281 @@
             background: transparent;
             border: none;
             color: white;
-            font-size: 18px;
+            font-size: 16px;
             resize: none;
             outline: none;
+            margin-bottom: 10px;
         }
 
-        .media-preview {
-            margin-top: 15px;
-            max-height: 300px;
-            border-radius: 10px;
-            display: none;
+        .preview-box {
             width: 100%;
+            max-height: 250px;
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 10px;
             object-fit: cover;
         }
 
-        .post-footer {
+        .tool-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
             border-top: 1px solid var(--border);
-            padding-top: 15px;
+            padding-top: 10px;
         }
 
-        .icon-btn {
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 20px;
-            transition: 0.2s;
+        .file-label { color: var(--accent); font-size: 20px; cursor: pointer; }
+
+        .btn-post {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
         }
 
-        .icon-btn:hover { color: var(--primary); }
+        /* Posts Feed */
+        .feed { padding: 10px; }
 
-        /* Actual Posts */
         .post-card {
-            background: var(--bg-card);
+            background: var(--card);
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
             border: 1px solid var(--border);
-            margin-bottom: 20px;
-            animation: fadeIn 0.5s ease;
         }
 
         .post-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .user-info b { color: var(--text-main); }
-        .user-info span { color: var(--text-dim); font-size: 12px; display: block; }
+        .user-block { display: flex; gap: 10px; align-items: center; }
+        .user-block img { width: 40px; height: 40px; border-radius: 50%; }
+        .user-name { font-weight: bold; font-size: 14px; }
 
         .sub-btn {
-            background: var(--glass);
-            border: 1px solid var(--primary);
             color: var(--primary);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
+            border: 1px solid var(--primary);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
-        .sub-btn.subscribed { background: var(--primary); color: white; }
+        .sub-btn.active { background: var(--primary); color: white; }
 
-        .post-content { line-height: 1.6; margin-bottom: 15px; }
+        .post-content { font-size: 15px; line-height: 1.4; margin-bottom: 10px; }
 
-        .post-media-box img, .post-media-box video {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
+        .post-img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
 
-        .action-bar {
+        /* Actions Bar */
+        .actions {
             display: flex;
             justify-content: space-around;
             border-top: 1px solid var(--border);
             padding-top: 10px;
         }
 
-        .action-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-dim);
-            cursor: pointer;
-        }
+        .act { display: flex; align-items: center; gap: 5px; color: #888; font-size: 13px; cursor: pointer; }
+        .act.liked { color: var(--primary); }
 
-        .action-item.active { color: var(--primary); }
-
-        /* Notification Toast */
-        #notification-center {
+        /* Notification */
+        #notify {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-
-        .toast {
+            top: 70px;
+            right: 10px;
             background: var(--primary);
-            color: white;
-            padding: 12px 25px;
+            padding: 10px 20px;
             border-radius: 8px;
-            margin-top: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            animation: slideLeft 0.3s forwards;
+            display: none;
+            z-index: 10000;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
     </style>
 </head>
 <body>
 
-    <nav>
-        <div style="font-size: 24px; font-weight: 900; color: var(--primary);">TrollNET</div>
-        <div class="search-box">
-            <i class="fa fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Search for trolls or content..." oninput="handleSearch()">
-        </div>
-        <div id="google-auth-container">
-            <div id="g_id_onload"
-                 data-client_id="778775023056-dnrr0d6ujirr01cs0vclfd6gpgseh7kl.apps.googleusercontent.com"
-                 data-callback="onGoogleSignIn">
-            </div>
-            <div class="g_id_signin" data-type="icon" data-shape="circle"></div>
-        </div>
-    </nav>
+    <div id="notify">Notification!</div>
 
-    <div class="stories-container" id="storiesList">
-        <div class="story-circle" onclick="addStory()">
-            <div style="display:flex; align-items:center; justify-content:center; height:100%; font-size:24px;">+</div>
+    <header>
+        <div style="color: var(--primary); font-weight: 900; font-size: 20px;">TrollNET</div>
+        <div class="search-bar">
+            <i class="fa fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search..." oninput="searchPosts()">
+        </div>
+        <div id="profileBtn">
+            <img id="userImg" src="" style="width: 35px; border-radius: 50%; display: none;">
+        </div>
+    </header>
+
+    <div class="stories" id="storyList">
+        <div class="story"><div style="font-size: 30px;">+</div></div>
+    </div>
+
+    <div class="post-creator">
+        <textarea id="postText" placeholder="Start a controversy..."></textarea>
+        <img id="mediaPreview" class="preview-box">
+        <div class="tool-row">
+            <label for="fileUp" class="file-label"><i class="fa fa-camera"></i></label>
+            <input type="file" id="fileUp" hidden accept="image/*,video/*" onchange="handleFile(event)">
+            <button class="btn-post" onclick="createPost()">POST</button>
         </div>
     </div>
 
-    <main class="main-layout">
-        <div class="create-post-window">
-            <div class="post-input-area">
-                <img src="" id="myAvatar" class="user-avatar" style="display:none;">
-                <textarea id="postContent" placeholder="What's the troll for today?"></textarea>
-            </div>
-            <img id="uploadPreview" class="media-preview">
-            <div class="post-footer">
-                <div style="display:flex; gap:20px;">
-                    <label for="fileInput" class="icon-btn"><i class="fa fa-image"></i></label>
-                    <input type="file" id="fileInput" hidden onchange="previewMedia(event)">
-                    <i class="fa fa-video icon-btn"></i>
-                    <i class="fa fa-smile icon-btn"></i>
-                </div>
-                <button onclick="publishPost()" id="publishBtn" style="background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 20px; font-weight: bold; cursor: pointer;">Post</button>
-            </div>
+    <div class="feed" id="mainFeed">
         </div>
 
-        <div id="newsFeed">
-            </div>
-    </main>
-
-    <div id="notification-center"></div>
-
     <script>
+        /* --- JAVASCRIPT LOGIC --- */
+
         const socket = io("https://suscraft-backend-production.up.railway.app");
-        let currentUser = null;
-        let subscriptions = new Set();
-        let allPosts = [];
+        let user = null;
+        let posts = [];
+        let subs = new Set();
 
-        // 1. Google Auth Integration
-        function onGoogleSignIn(response) {
-            const base64Url = response.credential.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const user = JSON.parse(window.atob(base64));
-            
-            currentUser = {
-                id: user.sub,
-                name: user.name,
-                email: user.email,
-                picture: user.picture
-            };
+        // 1. SIMULATED LOGIN
+        window.onload = () => {
+            let saved = localStorage.getItem('trollUser');
+            if (saved) {
+                user = JSON.parse(saved);
+            } else {
+                let name = prompt("Enter your Troll Name:");
+                user = {
+                    id: "TR_" + Math.floor(Math.random() * 9999),
+                    name: name || "Troll_" + Math.floor(Math.random() * 100),
+                    pic: "https://api.dicebear.com/7.x/pixel-art/svg?seed=" + (name || "anon")
+                };
+                localStorage.setItem('trollUser', JSON.stringify(user));
+            }
+            document.getElementById('userImg').src = user.pic;
+            document.getElementById('userImg').style.display = 'block';
+            toast("Logon Successful as " + user.name);
+        };
 
-            document.getElementById('myAvatar').src = currentUser.picture;
-            document.getElementById('myAvatar').style.display = 'block';
-            showNotification(`Welcome back, ${user.given_name}!`);
-        }
-
-        // 2. Real-time Multi-player Connectivity
-        socket.on('connect', () => {
-            console.log("Connected to TrollNET System");
-            showNotification("System Online");
-        });
-
-        // 3. Media Preview (20MB limit check)
-        function previewMedia(event) {
-            const file = event.target.files[0];
+        // 2. FILE HANDLING (20MB Limit)
+        let mediaData = null;
+        function handleFile(e) {
+            const file = e.target.files[0];
             if (file.size > 20 * 1024 * 1024) {
-                alert("File too large! Max 20MB.");
-                event.target.value = "";
+                alert("File too big! (Max 20MB)");
                 return;
             }
             const reader = new FileReader();
-            reader.onload = function(){
-                const output = document.getElementById('uploadPreview');
-                output.src = reader.result;
-                output.style.display = 'block';
+            reader.onload = () => {
+                mediaData = reader.result;
+                const prev = document.getElementById('mediaPreview');
+                prev.src = mediaData;
+                prev.style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
 
-        // 4. Publishing Logic
-        async function publishPost() {
-            const content = document.getElementById('postContent').value;
-            const media = document.getElementById('uploadPreview').src;
+        // 3. CREATE POST
+        function createPost() {
+            const txt = document.getElementById('postText').value;
+            if (!txt && !mediaData) return;
 
-            if(!currentUser) {
-                alert("Please sign in with Google first!");
-                return;
-            }
-
-            const postObj = {
+            const newPost = {
                 id: Date.now(),
-                userId: currentUser.id,
-                userName: currentUser.name,
-                userPic: currentUser.picture,
-                text: content,
-                media: media.startsWith('data') ? media : null,
+                uid: user.id,
+                uName: user.name,
+                uPic: user.pic,
+                content: txt,
+                media: mediaData,
                 likes: 0,
-                comments: [],
-                time: "Just now"
+                likedBy: []
             };
 
-            socket.emit('newTrollPost', postObj);
-            
-            // Clear UI
-            document.getElementById('postContent').value = "";
-            document.getElementById('uploadPreview').style.display = "none";
-            document.getElementById('fileInput').value = "";
+            // Send to Railway
+            socket.emit('newTrollPost', newPost);
+
+            // Instant feedback for simulator feel
+            document.getElementById('postText').value = "";
+            document.getElementById('mediaPreview').style.display = 'none';
+            mediaData = null;
+            toast("Post Published!");
         }
 
-        // 5. Receiving Feed Updates
+        // 4. REAL-TIME RECEIVE
         socket.on('feedUpdate', (data) => {
-            allPosts = data;
-            renderFeed(allPosts);
+            posts = data;
+            render(posts);
         });
 
-        function renderFeed(posts) {
-            const feed = document.getElementById('newsFeed');
+        // 5. RENDER SYSTEM
+        function render(dataList) {
+            const feed = document.getElementById('mainFeed');
             feed.innerHTML = "";
-            posts.forEach(post => {
-                const isSubscribed = subscriptions.has(post.userId);
-                const html = `
-                    <div class="post-card" id="post-${post.id}">
+            dataList.forEach(p => {
+                const isSub = subs.has(p.uid);
+                const isLiked = p.likedBy?.includes(user.id);
+                
+                feed.innerHTML += `
+                    <div class="post-card">
                         <div class="post-header">
-                            <div style="display:flex; gap:10px;">
-                                <img src="${post.userPic}" class="user-avatar">
-                                <div class="user-info">
-                                    <b>${post.userName}</b>
-                                    <span>${post.time}</span>
-                                </div>
+                            <div class="user-block">
+                                <img src="${p.uPic}">
+                                <div class="user-name">${p.uName}</div>
                             </div>
-                            <button class="sub-btn ${isSubscribed ? 'subscribed' : ''}" 
-                                    onclick="toggleSub('${post.userId}', this)">
-                                ${isSubscribed ? 'Unsubscribe' : 'Subscribe'}
-                            </button>
+                            <div class="sub-btn ${isSub ? 'active' : ''}" onclick="toggleSub('${p.uid}')">
+                                ${isSub ? 'Unsubscribe' : 'Subscribe'}
+                            </div>
                         </div>
-                        <div class="post-content">${post.text}</div>
-                        ${post.media ? `<div class="post-media-box"><img src="${post.media}"></div>` : ''}
-                        
-                        <div class="action-bar">
-                            <div class="action-item" onclick="handleLike(${post.id})">
-                                <i class="fa-regular fa-heart"></i> <span>${post.likes || 0}</span>
+                        <div class="post-content">${p.content}</div>
+                        ${p.media ? `<img src="${p.media}" class="post-img">` : ''}
+                        <div class="actions">
+                            <div class="act ${isLiked ? 'liked' : ''}" onclick="like(${p.id})">
+                                <i class="fa fa-heart"></i> ${p.likes}
                             </div>
-                            <div class="action-item" onclick="focusComment(${post.id})">
-                                <i class="fa-regular fa-comment"></i> <span>Comment</span>
-                            </div>
-                            <div class="action-item" onclick="sharePost(${post.id})">
-                                <i class="fa-regular fa-share-from-square"></i> <span>Share</span>
-                            </div>
-                            <div class="action-item" style="color:red;" onclick="reportToAdmin('${post.userName}', ${post.id})">
-                                <i class="fa fa-triangle-exclamation"></i>
-                            </div>
+                            <div class="act"><i class="fa fa-comment"></i> Comment</div>
+                            <div class="act" onclick="share(${p.id})"><i class="fa fa-share"></i> Share</div>
+                            <div class="act" style="color:red" onclick="report('${p.uName}')"><i class="fa fa-flag"></i></div>
                         </div>
                     </div>
                 `;
-                feed.innerHTML += html;
             });
         }
 
-        // 6. Subscription System
-        function toggleSub(userId, btn) {
-            if(subscriptions.has(userId)) {
-                subscriptions.delete(userId);
-                btn.classList.remove('subscribed');
-                btn.innerText = "Subscribe";
-            } else {
-                subscriptions.add(userId);
-                btn.classList.add('subscribed');
-                btn.innerText = "Unsubscribe";
-            }
+        // 6. ACTION FUNCTIONS
+        function toggleSub(uid) {
+            if (subs.has(uid)) subs.delete(uid);
+            else subs.add(uid);
+            render(posts);
+            toast("Subscription Updated");
         }
 
-        // 7. Search Engine
-        function handleSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allPosts.filter(p => 
-                p.text.toLowerCase().includes(query) || 
-                p.userName.toLowerCase().includes(query)
-            );
-            renderFeed(filtered);
+        function like(pid) {
+            socket.emit('likePost', { pid: pid, uid: user.id });
+            toast("You liked a post");
         }
 
-        // 8. Reporting System (Mail Integration)
-        function reportToAdmin(user, postId) {
-            const reason = prompt("Describe the violation for rabi65171@gmail.com:");
+        function share(pid) {
+            navigator.clipboard.writeText("https://trollnet-simulator.com/p/" + pid);
+            toast("Link Copied!");
+        }
+
+        function report(name) {
+            let reason = prompt("Report " + name + " for:");
             if(reason) {
-                socket.emit('reportSubmit', {
-                    adminEmail: "rabi65171@gmail.com",
-                    violator: user,
-                    reason: reason,
-                    postId: postId
-                });
-                alert("Report sent to admin for ban review.");
+                socket.emit('reportSubmit', { violator: name, reason: reason, email: 'rabi65171@gmail.com' });
+                alert("Report sent to rabi65171@gmail.com. User will be investigated for ban.");
             }
         }
 
-        // 9. Notifications
-        function showNotification(text) {
-            const center = document.getElementById('notification-center');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = text;
-            center.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
+        function searchPosts() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = posts.filter(p => p.content.toLowerCase().includes(q) || p.uName.toLowerCase().includes(q));
+            render(filtered);
         }
 
-        // Placeholder for Stories
-        function addStory() {
-            alert("Upload Story feature (Simulated): Selecting image...");
-            showNotification("Story added to TrollNET!");
-        }
-
-        function sharePost(id) {
-            navigator.clipboard.writeText(`https://trollnet.com/post/${id}`);
-            showNotification("Link copied to clipboard!");
+        function toast(msg) {
+            const box = document.getElementById('notify');
+            box.innerText = msg;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 2000);
         }
     </script>
 </body>
