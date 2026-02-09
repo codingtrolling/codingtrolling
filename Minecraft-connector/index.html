@@ -1,48 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Tool 11: MC Connector</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool 11 | Minecraft Proxy Bridge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
-        .terminal { border: 1px solid #0f0; padding: 10px; height: 300px; overflow-y: auto; background: #050505; }
-        input { background: #000; border: 1px solid #0f0; color: #0f0; padding: 10px; width: 300px; }
-        button { background: #0f0; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        :root {
+            --bg: #0C0C0C;
+            --panel: #181818;
+            --mc-green: #38E038;
+            --mc-red: #FF3E3E;
+            --accent: #5865F2;
+            --text: #E0E0E0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: var(--panel);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 { color: var(--mc-green); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        p { color: #888; font-size: 14px; }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input {
+            flex: 1;
+            background: #000;
+            border: 1px solid #444;
+            color: var(--mc-green);
+            padding: 12px;
+            border-radius: 6px;
+            outline: none;
+            font-family: monospace;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover { background: #4752C4; }
+
+        .terminal {
+            margin-top: 20px;
+            background: #000;
+            border-radius: 6px;
+            height: 250px;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            border: 1px solid #222;
+        }
+
+        .log-entry { margin-bottom: 5px; border-left: 3px solid #444; padding-left: 8px; }
+        .log-success { border-color: var(--mc-green); color: var(--mc-green); }
+        .log-error { border-color: var(--mc-red); color: var(--mc-red); }
+        .log-info { border-color: var(--accent); color: var(--accent); }
     </style>
 </head>
 <body>
-    <h1>[Tool 11] Minecraft Server Connector</h1>
-    <p>Bridge your browser to raw TCP Minecraft Servers.</p>
-    
-    <input type="text" id="serverIp" placeholder="play.hypixel.net:25565">
-    <button onclick="startBridge()">Link Server</button>
 
-    <div class="terminal" id="output">Ready to bridge...</div>
+<div class="container">
+    <h1><i class="fa fa-cube"></i> MC Connector</h1>
+    <p>Bridge a browser WebSocket to a TCP Minecraft Server via Railway Proxy.</p>
 
-    <script>
-        let bridge = null;
+    <div class="input-group">
+        <input type="text" id="serverIp" placeholder="e.g., play.hypixel.net:25565">
+        <button onclick="startBridge()">CONNECT</button>
+    </div>
 
-        function startBridge() {
-            const ip = document.getElementById('serverIp').value;
-            const log = document.getElementById('output');
-            
-            // Connect to your Railway Backend Proxy
-            bridge = new WebSocket('wss://minecraft-connector-backend-production.up.railway.app');
+    <div class="terminal" id="output">
+        <div class="log-entry">Waiting for user input...</div>
+    </div>
+</div>
 
-            bridge.onopen = () => {
-                log.innerHTML += "<div>[SYSTEM] Proxy Handshake Successful.</div>";
-                bridge.send(JSON.stringify({ type: 'connect', address: ip }));
-            };
+<script>
+    let bridge = null;
 
-            bridge.onmessage = (e) => {
-                if (typeof e.data === "string") {
-                    const res = JSON.parse(e.data);
-                    log.innerHTML += `<div>[${res.type.toUpperCase()}] ${res.msg}</div>`;
-                } else {
-                    log.innerHTML += `<div>[DATA] Received ${e.data.byteLength} bytes of MC Packets</div>`;
-                }
-                log.scrollTop = log.scrollHeight;
-            };
+    function log(message, type = '') {
+        const output = document.getElementById('output');
+        const entry = document.createElement('div');
+        entry.className = `log-entry log-${type}`;
+        entry.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+        output.appendChild(entry);
+        output.scrollTop = output.scrollHeight;
+    }
+
+    function startBridge() {
+        const ip = document.getElementById('serverIp').value;
+        
+        if (!ip) {
+            log("Error: Please enter a Server IP!", "error");
+            return;
         }
-    </script>
+
+        // 1. Initialize Connection
+        // REPLACE THIS URL with your actual Railway WSS link
+        const proxyUrl = "wss://your-project-name.up.railway.app";
+        
+        log(`Initiating handshake with ${proxyUrl}...`, "info");
+        
+        if (bridge) bridge.close();
+        bridge = new WebSocket(proxyUrl);
+
+        bridge.onopen = () => {
+            log("Proxy Handshake Successful.", "success");
+            
+            // 2. Send the connection command specifically
+            const payload = {
+                type: 'connect',
+                address: ip
+            };
+            
+            log(`Requesting bridge to ${ip}...`, "info");
+            bridge.send(JSON.stringify(payload));
+        };
+
+        bridge.onmessage = (event) => {
+            try {
+                const response = JSON.parse(event.data);
+
+                if (response.type === 'status') {
+                    log(response.msg, "success");
+                } else if (response.type === 'error') {
+                    log(response.msg, "error");
+                } else if (response.type === 'mc_packet') {
+                    // This shows that data is actually moving!
+                    console.log("Packet Received:", response.meta.name);
+                }
+            } catch (e) {
+                // If it's not JSON, it might be raw binary data
+                log("Received binary stream chunk.", "info");
+            }
+        };
+
+        bridge.onclose = () => {
+            log("Connection to Proxy closed.", "error");
+        };
+
+        bridge.onerror = (err) => {
+            log("WebSocket Error. Check browser console or Railway logs.", "error");
+            console.error(err);
+        };
+    }
+</script>
+
 </body>
 </html>
