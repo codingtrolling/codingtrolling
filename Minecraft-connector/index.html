@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tool 11: MC Connector</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+        .terminal { border: 1px solid #0f0; padding: 10px; height: 300px; overflow-y: auto; background: #050505; }
+        input { background: #000; border: 1px solid #0f0; color: #0f0; padding: 10px; width: 300px; }
+        button { background: #0f0; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>[Tool 11] Minecraft Server Connector</h1>
+    <p>Bridge your browser to raw TCP Minecraft Servers.</p>
+    
+    <input type="text" id="serverIp" placeholder="play.hypixel.net:25565">
+    <button onclick="startBridge()">Link Server</button>
+
+    <div class="terminal" id="output">Ready to bridge...</div>
+
+    <script>
+        let bridge = null;
+
+        function startBridge() {
+            const ip = document.getElementById('serverIp').value;
+            const log = document.getElementById('output');
+            
+            // Connect to your Railway Backend Proxy
+            bridge = new WebSocket('wss://minecraft-connector-backend-production.up.railway.app');
+
+            bridge.onopen = () => {
+                log.innerHTML += "<div>[SYSTEM] Proxy Handshake Successful.</div>";
+                bridge.send(JSON.stringify({ type: 'connect', address: ip }));
+            };
+
+            bridge.onmessage = (e) => {
+                if (typeof e.data === "string") {
+                    const res = JSON.parse(e.data);
+                    log.innerHTML += `<div>[${res.type.toUpperCase()}] ${res.msg}</div>`;
+                } else {
+                    log.innerHTML += `<div>[DATA] Received ${e.data.byteLength} bytes of MC Packets</div>`;
+                }
+                log.scrollTop = log.scrollHeight;
+            };
+        }
+    </script>
+</body>
+</html>
