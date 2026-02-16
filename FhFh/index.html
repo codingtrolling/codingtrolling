@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FhFh - Tool 11 Public</title>
+    <style>
+        /* --- FULL SYSTEM RESET --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- MAIN FEED CONTAINER --- */
+        .app-container {
+            height: 100vh;
+            width: 100vw;
+            overflow-y: scroll;
+            snap-type: y mandatory;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .app-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        /* --- VIDEO CARD SECTION --- */
+        .video-card {
+            height: 100vh;
+            width: 100vw;
+            snap-align: start;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- UI OVERLAY (Bottom Info) --- */
+        .video-info {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            width: 70%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .video-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .video-info p {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: #eee;
+        }
+
+        /* --- SIDEBAR (Interactions) --- */
+        .interaction-sidebar {
+            position: absolute;
+            right: 12px;
+            bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 20;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            transition: transform 0.1s;
+        }
+
+        .icon-circle:active {
+            transform: scale(0.9);
+        }
+
+        .icon-circle svg {
+            width: 26px;
+            height: 26px;
+            fill: #fff;
+        }
+
+        .action-count {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* --- AVATAR ANIMATION --- */
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-bottom: 10px;
+        }
+
+        /* --- NAVIGATION TABS (Fake Footer) --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            background: #000;
+            border-top: 0.5px solid #333;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #888;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .nav-item.active {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="videoFeed">
+        </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active">Home</div>
+        <div class="nav-item">Discover</div>
+        <div class="nav-item" style="font-size: 24px; color: white;">+</div>
+        <div class="nav-item">Inbox</div>
+        <div class="nav-item">Profile</div>
+    </nav>
+
+    <script>
+        // --- CONFIGURATION ---
+        // REPLACE THIS WITH YOUR LIVE RAILWAY URL
+        const BASE_API = "https://fhfh-backend-production.up.railway.app"; 
+
+        async function fetchFeed() {
+            const container = document.getElementById('videoFeed');
+            try {
+                const response = await fetch(`${BASE_API}/api/feed`);
+                const videos = await response.json();
+
+                if(videos.length === 0) {
+                    container.innerHTML = `<div style="padding:100px 20px; text-align:center;">No videos found on server.</div>`;
+                    return;
+                }
+
+                container.innerHTML = videos.map(vid => `
+                    <div class="video-card">
+                        <video loop playsinline onclick="handleVideoTap(this)">
+                            <source src="${vid.videoUrl}" type="video/mp4">
+                        </video>
+                        
+                        <div class="video-info">
+                            <h3>${vid.user || '@user'}</h3>
+                            <p>${vid.caption || ''}</p>
+                        </div>
+
+                        <div class="interaction-sidebar">
+                            <img src="${vid.avatar || 'https://i.pravatar.cc/100'}" class="profile-pic">
+                            <div class="action-item" onclick="likeVideo('${vid._id}')">
+                                <div class="icon-circle">
+                                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                </div>
+                                <span class="action-count">${vid.likes || 0}</span>
+                            </div>
+                            <div class="action-item">
+                                <div class="icon-circle">
+                                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                </div>
+                                <span class="action-count">0</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                startObserving();
+                
+            } catch (err) {
+                container.innerHTML = `<div style="padding:100px 20px; text-align:center;">Error connecting to Railway server.</div>`;
+            }
+        }
+
+        function handleVideoTap(video) {
+            if (video.paused) video.play();
+            else video.pause();
+        }
+
+        function startObserving() {
+            const options = { threshold: 0.6 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('video');
+                    if (entry.isIntersecting) {
+                        video.play().catch(() => {});
+                    } else {
+                        video.pause();
+                        video.currentTime = 0;
+                    }
+                });
+            }, options);
+
+            document.querySelectorAll('.video-card').forEach(card => observer.observe(card));
+        }
+
+        window.onload = fetchFeed;
+    </script>
+</body>
+</html>
