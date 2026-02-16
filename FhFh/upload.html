@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FhFh Tool 11 - Uploader</title>
+    <style>
+        body { background: #111; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 50px; }
+        .upload-card { background: #222; padding: 30px; border-radius: 15px; width: 100%; max-width: 400px; border: 1px solid #444; }
+        input, button { width: 100%; margin: 10px 0; padding: 12px; border-radius: 5px; border: none; }
+        input { background: #333; color: white; }
+        button { background: #fe2c55; color: white; font-weight: bold; cursor: pointer; }
+        #status { text-align: center; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="upload-card">
+        <h2>Upload to FhFh</h2>
+        <form id="uploadForm">
+            <input type="text" id="user" placeholder="@username" required>
+            <input type="text" id="caption" placeholder="Video caption..." required>
+            <input type="file" id="videoFile" accept="video/*" required>
+            <button type="submit" id="btn">PUBLISH VIDEO</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // REPLACE WITH YOUR RAILWAY URL
+        const API_URL = "https://your-project-name.up.railway.app/api/upload";
+
+        document.getElementById('uploadForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn');
+            const status = document.getElementById('status');
+            
+            btn.innerText = "UPLOADING...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('user', document.getElementById('user').value);
+            formData.append('caption', document.getElementById('caption').value);
+            formData.append('video', document.getElementById('videoFile').files[0]);
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    status.innerText = "✅ Success! Refresh your feed.";
+                    btn.innerText = "PUBLISH VIDEO";
+                    btn.disabled = false;
+                } else {
+                    status.innerText = "❌ Upload Failed. Check server logs.";
+                }
+            } catch (err) {
+                status.innerText = "❌ Error connecting to server.";
+            }
+        };
+    </script>
+</body>
+</html>
